@@ -110,8 +110,24 @@ class NDATest(unittest.TestCase):
         self.assertSetEqual({'q0', 'q1'}, self.automaton.step({'q0'}, 'b'))
 
     def test_to_dfa(self):
-        dfa = self.automaton.to_dfa()
-        pass
+        # this automaton accepts a+
+        automaton = NFA.create(
+            initial_state='q0',
+            transitions={
+                ('q0', 'a'): {'q0', 'q1'},
+                },
+            final_states={'q1'},
+            )
+
+        dfa = automaton.to_dfa()
+        self.assertSetEqual({'q0', 'q1'}, dfa.states)
+        self.assertEqual(1, len(dfa.final_states))
+        initial = dfa.initial_state
+        final, *_ = dfa.final_states
+        self.assertDictEqual({
+            (initial, 'a'): final,
+            (final, 'a'): final,
+            }, dfa.transitions)
 
 
 if __name__ == '__main__':

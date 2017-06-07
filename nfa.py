@@ -1,6 +1,7 @@
 from collections import defaultdict
 from itertools import chain
 from typing import DefaultDict, NamedTuple, Set, Tuple
+from dfa import DFA
 
 Symbol = str
 State = str
@@ -50,5 +51,33 @@ class NFA(NamedTuple):
         return frozenset(reachable())
 
     def to_dfa(self):
-        pass
-        # raise NotImplementedError
+        transitions = {}
+        initial_state = frozenset({self.initial_state, })
+        states = {initial_state, }
+        visited = set()
+
+        while states:
+            state = states.pop()
+            visited.add(state)
+
+            for symbol in self.alphabet:
+                new_state = self.step(state, symbol)
+                transitions[(state, symbol)] = new_state
+
+                if new_state not in visited:
+                    states.add(new_state)
+
+        trans = {
+            state: f'q{i}' for i, state in zip(range(len(visited)), visited)
+            }
+
+        return DFA.create(
+            initial_state=trans[initial_state],
+            transitions={
+                (trans[k[0]], k[1]): trans[v] for k, v in transitions.items()
+                },
+            final_states={
+                trans[state] for state in visited
+                if any(q in self.final_states for q in state)
+                }
+            )

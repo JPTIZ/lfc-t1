@@ -1,6 +1,6 @@
 from collections import defaultdict
 from itertools import chain
-from typing import DefaultDict, FrozenSet, List, NamedTuple, Tuple
+from typing import DefaultDict, NamedTuple, Set, Tuple
 
 Symbol = str
 State = str
@@ -9,44 +9,41 @@ State = str
 class NFA(NamedTuple):
     EPSILON = '&'
 
-    alphabet: FrozenSet[Symbol]
-    states: FrozenSet[State]
+    alphabet: Set[Symbol]
+    states: Set[State]
     initial_state: State
-    transitions: DefaultDict[Tuple[Symbol, State], FrozenSet[State]]
-    final_states: FrozenSet[State]
+    transitions: DefaultDict[Tuple[Symbol, State], Set[State]]
+    final_states: Set[State]
 
     @classmethod
     def create(cls, initial_state, transitions, final_states):
-        new_transitions = defaultdict(frozenset, {
-            k: frozenset(v) for k, v in transitions.items()
-            })
+        new_transitions = defaultdict(set, transitions)
 
-        s = chain.from_iterable((k[0], v) for k, v in new_transitions.items())
-        states = {initial_state, } | frozenset(final_states) | set(s)
+        s = chain.from_iterable((k[0], *v) for k, v in new_transitions.items())
+        states = {initial_state, } | final_states | set(s)
 
         return cls(
-            frozenset(c for _, c in transitions),
-            frozenset(states),
+            {c for _, c in transitions},
+            states,
             initial_state,
             new_transitions,
-            frozenset(final_states),
+            final_states,
             )
 
-    def epsilon_closure(self, state: State) -> FrozenSet[State]:
-        closure, new_closure = frozenset({state, }), frozenset()
+    def epsilon_closure(self, state: State) -> Set[State]:
+        closure, new_closure = {state, }, set()
 
         while closure != new_closure:
             new_closure = closure.copy()
-            for state in closure:
+            for state in new_closure:
                 closure |= self.transitions[(state, self.EPSILON)]
 
         return closure
 
-    def step(self, states: FrozenSet[State], symbol: Symbol) -> FrozenSet[
-        State]:
+    def step(self, states: Set[State], symbol: Symbol) -> Set[State]:
         def reachable():
             for s in states:
-                for t in self.transitions.get((s, symbol)):
+                for t in self.transitions.get((s, symbol), set()):
                     for u in self.epsilon_closure(t):
                         yield u
 

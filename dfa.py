@@ -1,17 +1,17 @@
 import json
 from itertools import chain, product
-from typing import Dict, FrozenSet, NamedTuple, Optional, Tuple
+from typing import Dict, Set, NamedTuple, Optional, Tuple
 
 Symbol = str
 State = str
 
 
 class DFA(NamedTuple):
-    alphabet: FrozenSet[Symbol]
-    states: FrozenSet[State]
+    alphabet: Set[Symbol]
+    states: Set[State]
     initial_state: State
     transitions: Dict[Tuple[Symbol, State], State]
-    final_states: FrozenSet[State]
+    final_states: Set[State]
 
     def copy(self):
         return DFA(
@@ -45,7 +45,7 @@ class DFA(NamedTuple):
             )
 
     def merge_nondistinguishable(self):
-        p = {self.final_states, self.states - self.final_states}
+        """p = {self.final_states, self.states - self.final_states}
         w = {self.final_states, }
 
         print(p)
@@ -74,14 +74,9 @@ class DFA(NamedTuple):
                         w.add(intersection if len(intersection) <= len(
                             difference) else difference)
 
-            print(p)
+            print(p)"""
 
-        return self.create(
-            initial_state=next(q for q in p if self.initial_state in q),
-            transitions={},
-            final_states={q for q in p
-                          if any(qf in q for qf in self.final_states)}
-            )
+        return self
 
     def accept(self, word) -> bool:
         state = self.initial_state

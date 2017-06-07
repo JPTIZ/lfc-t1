@@ -94,11 +94,11 @@ class NDATest(unittest.TestCase):
         self.automaton = NFA.create(
             initial_state='q0',
             transitions={
-                ('q0', 'a'): ['q0'],
-                ('q0', 'b'): ['q1'],
-                ('q1', NFA.EPSILON): ['q0'],
-                ('q1', 'a'): ['q2'],
-                ('q2', 'a'): ['q3'],
+                ('q0', 'a'): {'q0'},
+                ('q0', 'b'): {'q1'},
+                ('q1', NFA.EPSILON): {'q0'},
+                ('q1', 'a'): {'q2'},
+                ('q2', 'a'): {'q3'},
                 },
             final_states={'q3'},
             )

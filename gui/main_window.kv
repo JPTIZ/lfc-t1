@@ -1,0 +1,129 @@
+<MainWindow>:
+    BoxLayout:
+        orientation: 'vertical'
+        size: root.size
+        Panel:
+            id: menu_bar
+            size: root.size[0], 40
+            size_hint: None, None
+            StackLayout:
+                top: menu_bar.top - 5
+                size: self.parent.size
+                size_hint: None, None
+                Button:
+                    text: 'New'
+                    on_press: root.new_automata()
+                Button:
+                    text: 'Load'
+                    on_press: root.load_file()
+                Button:
+                    text: 'Add symbol'
+                    on_press: root.add_symbol()
+        TabbedPanel:
+            id: content_pane
+            canvas.before:
+                Color:
+                    rgb: (.4, .4, .4, 1)
+                Rectangle:
+                    size: self.size
+                    pos: self.pos
+                Color:
+                    rgb: (.3, .3, .3, 1.)
+                Line:
+                    points: self.x, self.top, self.right, self.top
+                    width: 1
+            tab_height: 28
+            do_default_tab: False
+            TabbedPanelItem:
+                text: 'Transitions'
+                ScrollView:
+                    Table:
+                        id: transition_table
+                        cols: 3
+                        rows: 14
+                        TableHeader:
+                            text: 'q'
+                        TableHeader:
+                            text: 'a'
+                        TableHeader:
+                            text: 'b'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+                        TableCell:
+                            text: 'placeholder'
+            TabbedPanelItem:
+                text: 'Automata'

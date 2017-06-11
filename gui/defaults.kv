@@ -1,0 +1,47 @@
+<Button>:
+    height: 30
+    font_size: 14
+    size_hint: None, None
+
+<Panel@Widget>:
+    canvas:
+        Color:
+            rgb: (.4, .4, .4)
+        Rectangle:
+            size: self.size
+            pos: self.pos
+
+<Table@GridLayout>:
+    cols: 2
+    cell_width: 100
+    cell_height: 32
+
+<TableHeader@Label>:
+    bold: True
+    canvas.before:
+        Color:
+            rgb: (.3, .3, .3)
+        Rectangle:
+            size: self.size
+            pos: self.pos
+        Color:
+            rgb: (.4, .4, .4)
+        Rectangle:
+            size: self.size[0] - 1, self.size[1] - 2
+            pos: self.pos[0] + 1, self.pos[1] + 1
+
+<TableCell@Label>:
+    color: 0, 0, 0, 1
+    canvas.before:
+        Color:
+            rgb: (0, 0, 0)
+        Rectangle:
+            size: self.size
+            pos: self.pos
+        Color:
+            rgb: (1, 1, 1)
+        Rectangle:
+            size: self.size[0] - 1, self.size[1] - 1
+            pos: self.pos[0] + 1, self.pos[1] + 1
+    width: self.parent.cell_width
+    height: self.parent.cell_height

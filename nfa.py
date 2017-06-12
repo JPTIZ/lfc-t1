@@ -82,14 +82,15 @@ class NFA(NamedTuple):
             for state in new_closure:
                 closure |= self.transitions[(state, self.EPSILON)]
 
-        return closure
+        return frozenset(closure)
 
     def step(self, states: Set[State], symbol: Symbol) -> Set[State]:
         def reachable():
-            for s in states:
-                for t in self.transitions.get((s, symbol), set()):
-                    for u in self.epsilon_closure(t):
-                        yield u
+            for closure in chain(self.epsilon_closure(s) for s in states):
+                for s in closure:
+                    for t in self.transitions.get((s, symbol), set()):
+                        for u in self.epsilon_closure(t):
+                            yield u
 
         return frozenset(reachable())
 

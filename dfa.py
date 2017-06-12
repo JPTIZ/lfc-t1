@@ -90,6 +90,7 @@ class DFA(NamedTuple):
         return self.transitions.get((state, symbol))
 
     def to_nfa(self):
+        from nfa import NFA  # fucking circular import
         return NFA.create(
             self.initial_state, {
                 k: [v] for k, v in self.transitions.items()

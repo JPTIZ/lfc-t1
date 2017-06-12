@@ -1,7 +1,6 @@
 from collections import defaultdict
 from itertools import chain
 from typing import DefaultDict, NamedTuple, Set, Tuple
-from dfa import DFA
 
 Symbol = str
 State = str
@@ -71,6 +70,7 @@ class NFA(NamedTuple):
             state: f'q{i}' for i, state in zip(range(len(visited)), visited)
             }
 
+        from dfa import DFA  # fucking circular import
         return DFA.create(
             initial_state=trans[initial_state],
             transitions={

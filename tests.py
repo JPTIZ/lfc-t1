@@ -119,9 +119,31 @@ class NDATest(unittest.TestCase):
             final_states={'q1'},
             )
 
-        dfa = automaton.to_dfa()
+        dfa, *_ = automaton.to_dfa()
         self.assertSetEqual({'q0', 'q1'}, dfa.states)
         self.assertEqual(1, len(dfa.final_states))
+        initial = dfa.initial_state
+        final, *_ = dfa.final_states
+        self.assertDictEqual({
+            (initial, 'a'): final,
+            (final, 'a'): final,
+            }, dfa.transitions)
+
+    def test_to_dfa_with_epsilon(self):
+        # this automaton accepts a*b*
+        automaton = NFA.create(
+            initial_state='q0',
+            transitions={
+                ('q0', 'a'): {'q0'},
+                ('q0', NFA.EPSILON): {'q1'},
+                ('q1', 'b'): {'q1'},
+                },
+            final_states={'q1'},
+            )
+
+        dfa, *_ = automaton.to_dfa()
+        self.assertSetEqual({'q0'}, dfa.states)
+        self.assertSetEqual({'q0'}, dfa.final_states)
         initial = dfa.initial_state
         final, *_ = dfa.final_states
         self.assertDictEqual({

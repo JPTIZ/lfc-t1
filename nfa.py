@@ -50,10 +50,17 @@ class NFA(NamedTuple):
         return frozenset(reachable())
 
     def to_dfa(self):
+        from dfa import DFA  # fucking circular import
+
         transitions = {}
         initial_state = frozenset({self.initial_state, })
         states = {initial_state, }
         visited = set()
+
+        def is_final(state):
+            return any(q in self.final_states for q in state)
+
+        steps = []
 
         while states:
             state = states.pop()
@@ -66,18 +73,20 @@ class NFA(NamedTuple):
                 if new_state not in visited:
                     states.add(new_state)
 
+            steps.append(DFA.create(
+                initial_state=initial_state,
+                transitions=transitions,
+                final_states={state for state in visited if is_final(state)},
+                ))
+
         trans = {
             state: f'q{i}' for i, state in zip(range(len(visited)), visited)
             }
 
-        from dfa import DFA  # fucking circular import
         return DFA.create(
             initial_state=trans[initial_state],
             transitions={
                 (trans[k[0]], k[1]): trans[v] for k, v in transitions.items()
                 },
-            final_states={
-                trans[state] for state in visited
-                if any(q in self.final_states for q in state)
-                }
-            )
+            final_states={trans[q] for q in visited if is_final(q)},
+            ), steps

@@ -45,38 +45,53 @@ class DFA(NamedTuple):
             )
 
     def merge_nondistinguishable(self):
-        """p = {self.final_states, self.states - self.final_states}
-        w = {self.final_states, }
+        classes = [self.final_states, self.states - self.final_states]
 
-        print(p)
+        def equivalence_class(state) -> Set[State]:
+            for klass in classes:
+                if state in klass:
+                    return klass
 
-        while len(w) > 0:
-            a = w.pop()
+        def equivalents(this, klass):
+            for that in klass:
+                if all(equivalence_class(self.step(this, symbol)) ==
+                               equivalence_class(self.step(that, symbol))
+                       for symbol in self.alphabet):
+                    yield that
 
-            for c in self.alphabet:
-                x = frozenset(k[0] for k, v in self.transitions.items()
-                              if k[1] == c and v in a)
+        while True:
+            new_classes = []
 
-                for y in p.copy():
-                    intersection, difference = x & y, y - x
-                    if not intersection or not difference:
-                        continue
+            for klass in (s.copy() for s in classes):
+                first = next(q for q in klass)
 
-                    p.remove(y)
-                    p.add(intersection)
-                    p.add(difference)
+                equiv_states = frozenset([first, *equivalents(first, klass)])
+                new_classes.append(equiv_states)
+                if equiv_states != klass:
+                    new_classes.append(klass - equiv_states)
 
-                    if y in w:
-                        w.remove(y)
-                        w.add(intersection)
-                        w.add(difference)
-                    else:
-                        w.add(intersection if len(intersection) <= len(
-                            difference) else difference)
+            if classes == new_classes:
+                break
 
-            print(p)"""
+            classes = new_classes
 
-        return self
+        trans = {
+            frozenset(state): f'q{i}' for i, state in enumerate(classes)
+            }
+
+        def is_final(klass):
+            return any(state in self.final_states for state in klass)
+
+        initial_state = next(c for c in classes if self.initial_state in c)
+        return DFA.create(
+            initial_state=trans[initial_state],
+            transitions={
+                (trans[equivalence_class(k[0])], k[1]):
+                    trans[equivalence_class(v)]
+                for k, v in self.transitions.items()
+                },
+            final_states={trans[c] for c in classes if is_final(c)},
+            )
 
     def accept(self, word) -> bool:
         state = self.initial_state

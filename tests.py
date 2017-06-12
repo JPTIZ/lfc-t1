@@ -26,6 +26,13 @@ class DFATest(unittest.TestCase):
             final_states={'q1', 'q2', 'q3'},
             )
 
+    def test_accept(self):
+        self.assertFalse(self.automaton.accept('101'))
+        self.assertTrue(self.automaton.accept('111'))
+
+    def test_step(self):
+        self.assertEqual(self.automaton.step('q0', '0'), 'q0')
+
     def test_remove_unreachable(self):
         automaton = DFA(
             alphabet={'0', '1'},
@@ -48,13 +55,14 @@ class DFATest(unittest.TestCase):
         self.assertSetEqual({'q1'}, cleaned.final_states)
 
     def test_merge_nondistinguishable(self):
+        # this automaton accepts 0*10* but it's bloated, taken from wikipedia
         automaton = DFA.create(
             initial_state='q0',
             transitions={
                 ('q0', '0'): 'q1',
                 ('q0', '1'): 'q2',
                 ('q1', '0'): 'q0',
-                ('q1', '1'): 'q5',
+                ('q1', '1'): 'q3',
                 ('q2', '0'): 'q4',
                 ('q2', '1'): 'q5',
                 ('q3', '0'): 'q4',
@@ -68,14 +76,19 @@ class DFATest(unittest.TestCase):
             )
 
         cleaned = automaton.merge_nondistinguishable()
-        pass
-
-    def test_accept(self):
-        self.assertFalse(self.automaton.accept('101'))
-        self.assertTrue(self.automaton.accept('111'))
-
-    def test_step(self):
-        self.assertEqual(self.automaton.step('q0', '0'), 'q0')
+        self.assertSetEqual({'q0', 'q1', 'q2'}, cleaned.states)
+        self.assertEqual(1, len(cleaned.final_states))
+        initial = cleaned.initial_state
+        final, *_ = cleaned.final_states
+        other, *_ = cleaned.states - {initial, final}
+        self.assertDictEqual({
+            (initial, '0'): initial,
+            (initial, '1'): final,
+            (final, '0'): final,
+            (final, '1'): other,
+            (other, '0'): other,
+            (other, '1'): other,
+            }, cleaned.transitions)
 
     def test_load(self):
         with open('fixture.json') as fp:

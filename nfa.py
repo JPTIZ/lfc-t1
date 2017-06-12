@@ -112,6 +112,9 @@ class NFA(NamedTuple):
 
             for symbol in self.alphabet:
                 new_state = self.step(state, symbol)
+                if not new_state:
+                    continue
+
                 transitions[(state, symbol)] = new_state
 
                 if new_state not in visited:

@@ -26,6 +26,20 @@ class DFATest(unittest.TestCase):
             final_states={'q1', 'q2', 'q3'},
             )
 
+    def test_invert(self):
+        automaton = DFA(
+            alphabet={'0', '1'},
+            states={'q0', 'q1'},
+            initial_state='q0',
+            transitions={
+                ('q0', '1'): 'q1',
+                },
+            final_states={'q1'},
+            )
+
+        invert = ~automaton
+        self.assertEqual({'q0'}, invert.final_states)
+
     def test_accept(self):
         self.assertFalse(self.automaton.accept('101'))
         self.assertTrue(self.automaton.accept('111'))
@@ -115,6 +129,28 @@ class NDATest(unittest.TestCase):
                 },
             final_states={'q3'},
             )
+
+    def test_union(self):
+        automaton1 = NFA.create(
+            initial_state='q0',
+            transitions={
+                ('q0', 'a'): {'q1'},
+                ('q1', 'a'): {'q1'},
+                },
+            final_states={'q1'},
+            )
+        automaton2 = NFA.create(
+            initial_state='q0',
+            transitions={
+                ('q0', 'b'): {'q1'},
+                ('q1', 'b'): {'q1'},
+                },
+            final_states={'q1'},
+            )
+
+        union = automaton1 | automaton2
+        self.assertSetEqual({'q0', 'q1', 'q2', 'q3', 'q4'}, union.states)
+        self.assertEqual(2, len(union.final_states))
 
     def test_epsilon_closure(self):
         self.assertSetEqual({'q0', 'q1'}, self.automaton.epsilon_closure('q1'))

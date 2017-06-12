@@ -15,19 +15,63 @@ class NFA(NamedTuple):
     transitions: DefaultDict[Tuple[Symbol, State], Set[State]]
     final_states: Set[State]
 
+    def __or__(self, other):
+        return self.union(other)
+
+    def union(self, other):
+        def translate(mapping, trans):
+            for k, v in mapping.items():
+                yield (trans[k[0]], k[1]), frozenset(trans[s] for s in v)
+
+        def offset(dfa, start):
+            trans = {
+                state: f'q{i}' for i, state in enumerate(dfa.states, start)
+                }
+
+            return self.create(
+                trans[dfa.initial_state],
+                dict(translate(dfa.transitions, trans)),
+                frozenset(trans[s] for s in dfa.final_states),
+                )
+
+        self_offset = offset(self, 1)
+        other_offset = offset(other, len(self.states) + 1)
+
+        def make_initials(automaton):
+            for k, v in automaton.transitions.items():
+                if k[0] == automaton.initial_state:
+                    yield ('q0', k[1]), v
+
+        new_transitions = dict(chain(
+            make_initials(self_offset),
+            make_initials(other_offset),
+            ))
+
+        new_transitions.update(self_offset.transitions)
+        new_transitions.update(other_offset.transitions)
+
+        return self.create(
+            'q0',
+            new_transitions,
+            self_offset.final_states | other_offset.final_states)
+
     @classmethod
     def create(cls, initial_state, transitions, final_states):
-        new_transitions = defaultdict(set, transitions)
+        def freeze(transitions):
+            for k, v in transitions.items():
+                yield k, frozenset(v)
+
+        new_transitions = defaultdict(frozenset, freeze(transitions))
 
         s = chain.from_iterable((k[0], *v) for k, v in new_transitions.items())
         states = {initial_state, } | final_states | set(s)
 
         return cls(
-            {c for _, c in transitions},
-            states,
+            frozenset({c for _, c in transitions if c != cls.EPSILON}),
+            frozenset(states),
             initial_state,
             new_transitions,
-            final_states,
+            frozenset(final_states),
             )
 
     def epsilon_closure(self, state: State) -> Set[State]:

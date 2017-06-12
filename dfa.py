@@ -22,6 +22,19 @@ class DFA(NamedTuple):
             final_states=self.final_states.copy(),
             )
 
+    def __invert__(self):
+        return DFA.create(
+            initial_state=self.initial_state,
+            transitions=self.transitions,
+            final_states=self.states - self.final_states,
+            )
+
+    def __or__(self, other):
+        return self.union(other)
+
+    def union(self, other):
+        return self.to_nfa().union(other.to_nfa()).to_dfa()
+
     def remove_unreachable(self):
         reachable = {self.initial_state, }
         states = {self.initial_state, }

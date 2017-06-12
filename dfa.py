@@ -1,6 +1,6 @@
 import json
 from itertools import chain, product
-from typing import Dict, Set, NamedTuple, Optional, Tuple
+from typing import Dict, NamedTuple, Optional, Set, Tuple
 
 Symbol = str
 State = str

@@ -13,17 +13,16 @@ class DFA(NamedTuple):
     transitions: Dict[Tuple[Symbol, State], State]
     final_states: Set[State]
 
-    def copy(self):
-        import copy
-        return DFA(
-            alphabet=self.alphabet.copy(),
-            states=self.states.copy(),
-            initial_state=self.initial_state,
-            transitions=copy.deepcopy(self.transitions),
-            final_states=self.final_states.copy(),
-            )
+    def __add__(self, other):
+        return self.concatenate(other)
+
+    def concatenate(self, other):
+        return self.to_nfa().concatenate(other.to_nfa()).to_dfa()
 
     def __invert__(self):
+        return self.complement()
+
+    def complement(self):
         return DFA.create(
             initial_state=self.initial_state,
             transitions=self.transitions,

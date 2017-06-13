@@ -130,6 +130,42 @@ class NDATest(unittest.TestCase):
             final_states={'q3'},
             )
 
+    def test_concatenate(self):
+        automaton1 = NFA.create(
+            initial_state='q0',
+            transitions={
+                ('q0', 'a'): {'q1'},
+                ('q1', 'a'): {'q1'},
+                },
+            final_states={'q1'},
+            )
+        automaton2 = NFA.create(
+            initial_state='q0',
+            transitions={
+                ('q0', 'b'): {'q1'},
+                ('q1', 'b'): {'q1'},
+                },
+            final_states={'q1'},
+            )
+
+        concatenate = automaton1 + automaton2
+        self.assertEqual({'a', 'b'}, concatenate.alphabet)
+        self.assertSetEqual({'q0', 'q1', 'q2', 'q3'}, concatenate.states)
+        self.assertSetEqual({'q3'}, concatenate.final_states)
+
+        # too hard to test on epsilon-NFA
+        cleaned = concatenate.remove_epsilon_transitions()
+        final_a1 = cleaned.step(cleaned.initial_state, 'a')
+        initial_a2 = cleaned.step(final_a1 'b')
+        final, *_ = cleaned.final_states
+        self.assertDictEqual({
+            (cleaned.initial_state, 'a'): {final_a1},
+            (final_a1, 'a'): {final_a1},
+            (final_a1, 'b'): {initial_a2},
+            (initial_a2, 'b'): {final},
+            (final, 'b'): {final},
+            }, cleaned.transitions)
+
     def test_union(self):
         automaton1 = NFA.create(
             initial_state='q0',

@@ -17,13 +17,49 @@ class NFA(NamedTuple):
     transitions: DefaultDict[Tuple[Symbol, State], Set[State]]
     final_states: Set[State]
 
-    def copy(self):
-        return NFA(
-            alphabet=self.alphabet.copy(),
-            states=self.states.copy(),
+    def __invert__(self):
+        return self.complement()
+
+    def complement(self):
+        return NFA.create(
             initial_state=self.initial_state,
-            transitions=copy.deepcopy(self.transitions),
-            final_states=self.final_states.copy(),
+            transitions=self.transitions,
+            final_states=self.states - self.final_states,
+            )
+
+    def __add__(self, other):
+        return self.concatenate(other)
+
+    def concatenate(self, other):
+        def translate(mapping, trans):
+            for k, v in mapping.items():
+                yield (trans[k[0]], k[1]), frozenset(trans[s] for s in v)
+
+        # sift up all states so we can chain the automatons together
+        def offset(dfa, start):
+            trans = {
+                state: f'q{i}' for i, state in enumerate(dfa.states, start)
+                }
+
+            return NFA.create(
+                trans[dfa.initial_state],
+                dict(translate(dfa.transitions, trans)),
+                frozenset(trans[s] for s in dfa.final_states),
+                )
+
+        other = offset(other, len(self.states))
+
+        new_transitions = {
+            (q, self.EPSILON): {other.initial_state} for q in self.final_states
+            }
+
+        new_transitions.update(self.transitions)
+        new_transitions.update(other.transitions)
+
+        return NFA.create(
+            initial_state=self.initial_state,
+            transitions=new_transitions,
+            final_states=other.final_states,
             )
 
     def __or__(self, other):
@@ -126,13 +162,15 @@ class NFA(NamedTuple):
     def to_dfa(self):
         from dfa import DFA  # fucking circular import
 
+        cleaned = self.remove_epsilon_transitions()
+
         transitions = {}
-        initial_state = frozenset({self.initial_state, })
+        initial_state = frozenset({cleaned.initial_state, })
         states = {initial_state, }
         visited = set()
 
         def is_final(s):
-            return any(q in self.final_states for q in s)
+            return any(q in cleaned.final_states for q in s)
 
         steps = []
 
@@ -140,8 +178,8 @@ class NFA(NamedTuple):
             state = states.pop()
             visited.add(state)
 
-            for symbol in self.alphabet:
-                new_state = self.step(state, symbol)
+            for symbol in cleaned.alphabet:
+                new_state = cleaned.step(state, symbol)
                 if not new_state:
                     continue
 

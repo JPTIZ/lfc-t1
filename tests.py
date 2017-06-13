@@ -116,7 +116,7 @@ class DFATest(unittest.TestCase):
                             automaton.final_states)
 
 
-class NDATest(unittest.TestCase):
+class NFATest(unittest.TestCase):
     def setUp(self):
         self.automaton = NFA.create(
             initial_state='q0',

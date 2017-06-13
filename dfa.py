@@ -14,11 +14,12 @@ class DFA(NamedTuple):
     final_states: Set[State]
 
     def copy(self):
+        import copy
         return DFA(
             alphabet=self.alphabet.copy(),
             states=self.states.copy(),
-            initial_state=self.initial_state.copy(),
-            transitions=self.transitions.copy(),
+            initial_state=self.initial_state,
+            transitions=copy.deepcopy(self.transitions),
             final_states=self.final_states.copy(),
             )
 

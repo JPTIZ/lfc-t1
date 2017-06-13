@@ -1,9 +1,11 @@
+import copy
 from collections import defaultdict
 from itertools import chain
-from typing import DefaultDict, NamedTuple, Set, Tuple
+from typing import DefaultDict, FrozenSet, NamedTuple, Set, Tuple
 
 Symbol = str
 State = str
+StateSet = FrozenSet[State]
 
 
 class NFA(NamedTuple):
@@ -15,6 +17,15 @@ class NFA(NamedTuple):
     transitions: DefaultDict[Tuple[Symbol, State], Set[State]]
     final_states: Set[State]
 
+    def copy(self):
+        return NFA(
+            alphabet=self.alphabet.copy(),
+            states=self.states.copy(),
+            initial_state=self.initial_state,
+            transitions=copy.deepcopy(self.transitions),
+            final_states=self.final_states.copy(),
+            )
+
     def __or__(self, other):
         return self.union(other)
 
@@ -23,6 +34,7 @@ class NFA(NamedTuple):
             for k, v in mapping.items():
                 yield (trans[k[0]], k[1]), frozenset(trans[s] for s in v)
 
+        # sift up all states so we can chain the automatons together
         def offset(dfa, start):
             trans = {
                 state: f'q{i}' for i, state in enumerate(dfa.states, start)
@@ -37,15 +49,10 @@ class NFA(NamedTuple):
         self_offset = offset(self, 1)
         other_offset = offset(other, len(self.states) + 1)
 
-        def make_initials(automaton):
-            for k, v in automaton.transitions.items():
-                if k[0] == automaton.initial_state:
-                    yield ('q0', k[1]), v
-
-        new_transitions = dict(chain(
-            make_initials(self_offset),
-            make_initials(other_offset),
-            ))
+        new_transitions = {
+            ('q0', self.EPSILON): {self_offset.initial_state,
+                                   other_offset.initial_state}
+            }
 
         new_transitions.update(self_offset.transitions)
         new_transitions.update(other_offset.transitions)
@@ -57,8 +64,8 @@ class NFA(NamedTuple):
 
     @classmethod
     def create(cls, initial_state, transitions, final_states):
-        def freeze(transitions):
-            for k, v in transitions.items():
+        def freeze(t):
+            for k, v in t.items():
                 yield k, frozenset(v)
 
         new_transitions = defaultdict(frozenset, freeze(transitions))
@@ -74,7 +81,7 @@ class NFA(NamedTuple):
             frozenset(final_states),
             )
 
-    def epsilon_closure(self, state: State) -> Set[State]:
+    def epsilon_closure(self, state: State) -> StateSet:
         closure, new_closure = {state, }, set()
 
         while closure != new_closure:
@@ -102,8 +109,8 @@ class NFA(NamedTuple):
         states = {initial_state, }
         visited = set()
 
-        def is_final(state):
-            return any(q in self.final_states for q in state)
+        def is_final(s):
+            return any(q in self.final_states for q in s)
 
         steps = []
 

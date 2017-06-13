@@ -227,13 +227,15 @@ class NFATest(unittest.TestCase):
             )
 
         dfa, *_ = automaton.to_dfa()
-        self.assertSetEqual({'q0'}, dfa.states)
-        self.assertSetEqual({'q0'}, dfa.final_states)
+        self.assertSetEqual({'q0', 'q1'}, dfa.states)
+        self.assertSetEqual({'q0', 'q1'}, dfa.final_states)
         initial = dfa.initial_state
-        final, *_ = dfa.final_states
+        final, *_ = dfa.final_states - {initial, }
+        other, *_ = dfa.states - {initial, }
         self.assertDictEqual({
-            (initial, 'a'): final,
-            (final, 'a'): final,
+            (initial, 'a'): initial,
+            (initial, 'b'): final,
+            (final, 'b'): final,
             }, dfa.transitions)
 
     def test_remove_epsilon_transitions(self):

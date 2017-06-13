@@ -91,7 +91,29 @@ class NFA(NamedTuple):
 
         return frozenset(closure)
 
-    def step(self, states: Set[State], symbol: Symbol) -> Set[State]:
+    def remove_epsilon_transitions(self):
+        transitions = copy.deepcopy(self.transitions)
+        final_states = set()
+
+        __marker = object()
+
+        for p in self.states:
+            for q in self.epsilon_closure(p):
+                for a in self.alphabet:
+                    transitions[(p, a)] |= transitions[(q, a)]
+
+                if q in self.final_states:
+                    final_states.add(p)
+
+            transitions.pop((p, self.EPSILON), __marker)
+
+        return NFA.create(
+            initial_state=self.initial_state,
+            transitions=transitions,
+            final_states=final_states,
+            )
+
+    def step(self, states: StateSet, symbol: Symbol) -> StateSet:
         def reachable():
             for closure in chain(self.epsilon_closure(s) for s in states):
                 for s in closure:

@@ -200,6 +200,32 @@ class NDATest(unittest.TestCase):
             (final, 'a'): final,
             }, dfa.transitions)
 
+    def test_remove_epsilon_transitions(self):
+        # taken from Ullman slides
+        automaton = NFA.create(
+            initial_state='q0',
+            transitions={
+                ('q0', '0'): {'q2'},
+                ('q0', '1'): {'q1'},
+                ('q1', '0'): {'q0'},
+                ('q1', NFA.EPSILON): {'q2'},
+                ('q2', '1'): {'q0'},
+                ('q2', NFA.EPSILON): {'q1'},
+                },
+            final_states={'q2'},
+            )
+
+        cleaned = automaton.remove_epsilon_transitions()
+        self.assertDictEqual({
+            ('q0', '0'): {'q2'},
+            ('q0', '1'): {'q1'},
+            ('q1', '0'): {'q0'},
+            ('q1', '1'): {'q0'},
+            ('q2', '0'): {'q0'},
+            ('q2', '1'): {'q0'},
+            }, cleaned.transitions)
+        self.assertSetEqual({'q1', 'q2'}, cleaned.final_states)
+
 
 if __name__ == '__main__':
     unittest.main()

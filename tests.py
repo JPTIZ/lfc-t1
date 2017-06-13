@@ -156,7 +156,7 @@ class NFATest(unittest.TestCase):
         # too hard to test on epsilon-NFA
         cleaned = concatenate.remove_epsilon_transitions()
         final_a1 = cleaned.step(cleaned.initial_state, 'a')
-        initial_a2 = cleaned.step(final_a1 'b')
+        initial_a2 = cleaned.step(final_a1, 'b')
         final, *_ = cleaned.final_states
         self.assertDictEqual({
             (cleaned.initial_state, 'a'): {final_a1},

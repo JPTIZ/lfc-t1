@@ -1,3 +1,4 @@
+import itertools
 import json
 from itertools import chain, product
 from typing import Dict, NamedTuple, Optional, Set, Tuple
@@ -13,20 +14,38 @@ class DFA(NamedTuple):
     transitions: Dict[Tuple[Symbol, State], State]
     final_states: Set[State]
 
+    def complete(self):
+        transitions = self.transitions.copy()
+        for state, symbol in itertools.product(self.states, self.alphabet):
+            transitions.setdefault((state, symbol), 'qerr')
+
+        return DFA.create(
+            initial_state=self.initial_state,
+            transitions=transitions,
+            final_states=self.final_states,
+            )
+
     def __add__(self, other):
         return self.concatenate(other)
 
     def concatenate(self, other):
         return self.to_nfa().concatenate(other.to_nfa()).to_dfa()
 
+    def __sub__(self, other):
+        return self.difference(other)
+
+    def difference(self, other):
+        return self.complement().union(other).complement()
+
     def __invert__(self):
         return self.complement()
 
     def complement(self):
+        complete = self.complete()
         return DFA.create(
-            initial_state=self.initial_state,
-            transitions=self.transitions,
-            final_states=self.states - self.final_states,
+            initial_state=complete.initial_state,
+            transitions=complete.transitions,
+            final_states=complete.states - complete.final_states,
             )
 
     def __or__(self, other):

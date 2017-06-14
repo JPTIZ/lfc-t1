@@ -4,6 +4,12 @@ from nfa import NFA
 
 
 class DFATest(unittest.TestCase):
+    def assertIsomorphic(self, expected: DFA, value: DFA):
+        expected = expected.remove_unreachable().merge_nondistinguishable()
+        value = value.remove_unreachable().merge_nondistinguishable()
+        self.assertSetEqual(set(), (expected - value).final_states)
+        self.assertSetEqual(set(), (value - expected).final_states)
+
     def setUp(self):
         self.automaton = DFA(
             alphabet={'0', '1'},
@@ -26,7 +32,7 @@ class DFATest(unittest.TestCase):
             final_states={'q1', 'q2', 'q3'},
             )
 
-    def test_invert(self):
+    def test_complement(self):
         automaton = DFA(
             alphabet={'0', '1'},
             states={'q0', 'q1'},
@@ -37,8 +43,8 @@ class DFATest(unittest.TestCase):
             final_states={'q1'},
             )
 
-        invert = ~automaton
-        self.assertEqual({'q0'}, invert.final_states)
+        complement = ~automaton
+        self.assertEqual({'q0', 'qerr'}, complement.final_states)
 
     def test_accept(self):
         self.assertFalse(self.automaton.accept('101'))
@@ -117,6 +123,12 @@ class DFATest(unittest.TestCase):
 
 
 class NFATest(unittest.TestCase):
+    def assertIsomorphic(self, expected: NFA, value: NFA):
+        expected = expected.to_dfa().remove_unreachable().merge_nondistinguishable().complete()
+        value = value.to_dfa().remove_unreachable().merge_nondistinguishable().complete()
+        self.assertSetEqual(set(), (expected - value).final_states)
+        self.assertSetEqual(set(), (value - expected).final_states)
+
     def setUp(self):
         self.automaton = NFA.create(
             initial_state='q0',
@@ -149,22 +161,20 @@ class NFATest(unittest.TestCase):
             )
 
         concatenate = automaton1 + automaton2
-        self.assertEqual({'a', 'b'}, concatenate.alphabet)
-        self.assertSetEqual({'q0', 'q1', 'q2', 'q3'}, concatenate.states)
-        self.assertEqual(1, len(concatenate.final_states))
-
-        # too hard to test on epsilon-NFA
-        """cleaned = concatenate.remove_epsilon_transitions()
-        final_a1 = cleaned.step(cleaned.initial_state, 'a')
-        initial_a2 = cleaned.step(final_a1, 'b')
-        final, *_ = cleaned.final_states
-        self.assertDictEqual({
-            (cleaned.initial_state, 'a'): {final_a1},
-            (final_a1, 'a'): {final_a1},
-            (final_a1, 'b'): {initial_a2},
-            (initial_a2, 'b'): {final},
-            (final, 'b'): {final},
-            }, cleaned.transitions)"""
+        self.assertFalse(concatenate.to_dfa().accept('bb'))
+        self.assertTrue(concatenate.to_dfa().accept('aabb'))
+        expected = NFA.create(
+            initial_state='q0',
+            transitions={
+                ('q0', 'a'): {'q1'},
+                ('q1', 'a'): {'q1'},
+                ('q1', NFA.EPSILON): {'q2'},
+                ('q2', 'b'): {'q3'},
+                ('q3', 'b'): {'q3'},
+                },
+            final_states={'q3'},
+            )
+        self.assertIsomorphic(concatenate, expected)
 
     def test_union(self):
         automaton1 = NFA.create(
@@ -184,9 +194,20 @@ class NFATest(unittest.TestCase):
             final_states={'q1'},
             )
 
+        expected = NFA.create(
+            initial_state='q0',
+            transitions={
+                ('q0', 'a'): {'q1'},
+                ('q1', 'a'): {'q1'},
+                ('q1', 'b'): {'q3'},
+                ('q2', 'b'): {'q3'},
+                ('q3', 'b'): {'q3'},
+                },
+            final_states={'q3'},
+            )
+
         union = automaton1 | automaton2
-        self.assertSetEqual({'q0', 'q1', 'q2', 'q3', 'q4'}, union.states)
-        self.assertEqual(2, len(union.final_states))
+        self.assertIsomorphic(expected, union)
 
     def test_epsilon_closure(self):
         self.assertSetEqual({'q0', 'q1'}, self.automaton.epsilon_closure('q1'))
@@ -204,7 +225,7 @@ class NFATest(unittest.TestCase):
             final_states={'q1'},
             )
 
-        dfa, *_ = automaton.to_dfa()
+        dfa = automaton.to_dfa()
         self.assertSetEqual({'q0', 'q1'}, dfa.states)
         self.assertEqual(1, len(dfa.final_states))
         initial = dfa.initial_state
@@ -226,7 +247,7 @@ class NFATest(unittest.TestCase):
             final_states={'q1'},
             )
 
-        dfa, *_ = automaton.to_dfa()
+        dfa = automaton.to_dfa()
         self.assertSetEqual({'q0', 'q1'}, dfa.states)
         self.assertSetEqual({'q0', 'q1'}, dfa.final_states)
         initial = dfa.initial_state

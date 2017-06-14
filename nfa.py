@@ -1,4 +1,5 @@
 import copy
+import itertools
 from collections import defaultdict
 from itertools import chain
 from typing import DefaultDict, FrozenSet, NamedTuple, Set, Tuple
@@ -6,6 +7,10 @@ from typing import DefaultDict, FrozenSet, NamedTuple, Set, Tuple
 Symbol = str
 State = str
 StateSet = FrozenSet[State]
+
+
+def shrink(transitions):
+    return {k: v for k, v in transitions.items() if v}
 
 
 class NFA(NamedTuple):
@@ -21,82 +26,80 @@ class NFA(NamedTuple):
         return self.complement()
 
     def complement(self):
+        complete = self.complete()
         return NFA.create(
-            initial_state=self.initial_state,
-            transitions=self.transitions,
-            final_states=self.states - self.final_states,
+            initial_state=complete.initial_state,
+            transitions=complete.transitions,
+            final_states=complete.states - complete.final_states,
             )
 
     def __add__(self, other):
         return self.concatenate(other)
 
     def concatenate(self, other):
-        def translate(mapping, trans):
-            for k, v in mapping.items():
-                yield (trans[k[0]], k[1]), frozenset(trans[s] for s in v)
-
-        # sift up all states so we can chain the automatons together
-        def offset(dfa, start):
-            trans = {
-                state: f'q{i}' for i, state in enumerate(dfa.states, start)
-                }
-
-            return NFA.create(
-                trans[dfa.initial_state],
-                dict(translate(dfa.transitions, trans)),
-                frozenset(trans[s] for s in dfa.final_states),
-                )
-
-        other = offset(other, len(self.states))
-
         new_transitions = {
-            (q, self.EPSILON): {other.initial_state} for q in self.final_states
+            (f'{q}_0', self.EPSILON): {f'{other.initial_state}_1'}
+            for q in self.final_states
             }
 
-        new_transitions.update(self.transitions)
-        new_transitions.update(other.transitions)
+        new_transitions.update({
+            (f'{src}_0', symbol): {f'{state}_0' for state in dst}
+            for (src, symbol), dst in self.transitions.items()
+            })
+
+        new_transitions.update({
+            (f'{src}_1', symbol): {f'{state}_1' for state in dst}
+            for (src, symbol), dst in other.transitions.items()
+            })
 
         return NFA.create(
-            initial_state=self.initial_state,
+            initial_state=f'{self.initial_state}_0',
             transitions=new_transitions,
-            final_states=other.final_states,
+            final_states={f'{state}_1' for state in other.final_states},
             )
+
+    def __sub__(self, other):
+        return self.difference(other)
+
+    def difference(self, other):
+        return self.complement().union(other).complement()
 
     def __or__(self, other):
         return self.union(other)
 
     def union(self, other):
-        def translate(mapping, trans):
-            for k, v in mapping.items():
-                yield (trans[k[0]], k[1]), frozenset(trans[s] for s in v)
-
-        # sift up all states so we can chain the automatons together
-        def offset(dfa, start):
-            trans = {
-                state: f'q{i}' for i, state in enumerate(dfa.states, start)
-                }
-
-            return self.create(
-                trans[dfa.initial_state],
-                dict(translate(dfa.transitions, trans)),
-                frozenset(trans[s] for s in dfa.final_states),
-                )
-
-        self_offset = offset(self, 1)
-        other_offset = offset(other, len(self.states) + 1)
-
         new_transitions = {
-            ('q0', self.EPSILON): {self_offset.initial_state,
-                                   other_offset.initial_state}
+            ('q0', self.EPSILON): {f'{self.initial_state}_0',
+                                   f'{other.initial_state}_1', }
             }
 
-        new_transitions.update(self_offset.transitions)
-        new_transitions.update(other_offset.transitions)
+        new_transitions.update({
+            (f'{src}_0', a): {f'{state}_0' for state in dst}
+            for (src, a), dst in self.transitions.items()
+            })
 
-        return self.create(
-            'q0',
-            new_transitions,
-            self_offset.final_states | other_offset.final_states)
+        new_transitions.update({
+            (f'{src}_1', a): {f'{state}_1' for state in dst}
+            for (src, a), dst in self.transitions.items()
+            })
+
+        return NFA.create(
+            initial_state='q0',
+            transitions=new_transitions,
+            final_states={f'{state}_0' for state in self.final_states} |
+                         {f'{state}_1' for state in other.final_states}
+            )
+
+    def complete(self):
+        transitions = copy.deepcopy(shrink(self.transitions))
+        for (state, symbol) in itertools.product(self.states, self.alphabet):
+            transitions.setdefault((state, symbol), {'qerr'})
+
+        return NFA.create(
+            initial_state=self.initial_state,
+            transitions=transitions,
+            final_states=self.final_states,
+            )
 
     @classmethod
     def create(cls, initial_state, transitions, final_states):
@@ -204,4 +207,4 @@ class NFA(NamedTuple):
                 (trans[k[0]], k[1]): trans[v] for k, v in transitions.items()
                 },
             final_states={trans[q] for q in visited if is_final(q)},
-            ), steps
+            )

@@ -5,10 +5,8 @@ from nfa import NFA
 
 class DFATest(unittest.TestCase):
     def assertIsomorphic(self, expected: DFA, value: DFA):
-        expected = expected.remove_unreachable().merge_nondistinguishable()
-        value = value.remove_unreachable().merge_nondistinguishable()
-        self.assertSetEqual(set(), (expected - value).final_states)
-        self.assertSetEqual(set(), (value - expected).final_states)
+        intersect = expected.minimize() & value.minimize()
+        self.assertSetEqual(set(), intersect.final_states)
 
     def setUp(self):
         self.automaton = DFA(
@@ -140,10 +138,8 @@ class DFATest(unittest.TestCase):
 
 class NFATest(unittest.TestCase):
     def assertIsomorphic(self, expected: NFA, value: NFA):
-        expected = expected.to_dfa().remove_unreachable().merge_nondistinguishable().complete()
-        value = value.to_dfa().remove_unreachable().merge_nondistinguishable().complete()
-        self.assertSetEqual(set(), (expected - value).final_states)
-        self.assertSetEqual(set(), (value - expected).final_states)
+        intersect = expected.to_dfa().minimize() & value.to_dfa().minimize()
+        self.assertSetEqual(set(), intersect.final_states)
 
     def setUp(self):
         self.automaton = NFA.create(

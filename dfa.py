@@ -51,6 +51,12 @@ class DFA(NamedTuple):
             final_states=complete.states - complete.final_states,
             )
 
+    def __and__(self, other):
+        return self.intersect(other)
+
+    def intersect(self, other):
+        return self.complement().union(other.complement()).complement()
+
     def __or__(self, other):
         return self.union(other)
 

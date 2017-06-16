@@ -80,7 +80,7 @@ class NFA(NamedTuple):
 
         new_transitions.update({
             (f'{src}_1', a): {f'{state}_1' for state in dst}
-            for (src, a), dst in self.transitions.items()
+            for (src, a), dst in other.transitions.items()
             })
 
         return NFA.create(

@@ -159,7 +159,6 @@ class NFATest(unittest.TestCase):
             initial_state='q0',
             transitions={
                 ('q0', 'a'): {'q1'},
-                ('q1', 'a'): {'q1'},
                 },
             final_states={'q1'},
             )
@@ -167,22 +166,17 @@ class NFATest(unittest.TestCase):
             initial_state='q0',
             transitions={
                 ('q0', 'b'): {'q1'},
-                ('q1', 'b'): {'q1'},
                 },
             final_states={'q1'},
             )
 
         concatenate = automaton1 + automaton2
-        self.assertFalse(concatenate.to_dfa().accept('bb'))
-        self.assertTrue(concatenate.to_dfa().accept('aabb'))
         expected = NFA.create(
             initial_state='q0',
             transitions={
                 ('q0', 'a'): {'q1'},
-                ('q1', 'a'): {'q1'},
                 ('q1', NFA.EPSILON): {'q2'},
                 ('q2', 'b'): {'q3'},
-                ('q3', 'b'): {'q3'},
                 },
             final_states={'q3'},
             )
@@ -193,7 +187,6 @@ class NFATest(unittest.TestCase):
             initial_state='q0',
             transitions={
                 ('q0', 'a'): {'q1'},
-                ('q1', 'a'): {'q1'},
                 },
             final_states={'q1'},
             )
@@ -201,7 +194,6 @@ class NFATest(unittest.TestCase):
             initial_state='q0',
             transitions={
                 ('q0', 'b'): {'q1'},
-                ('q1', 'b'): {'q1'},
                 },
             final_states={'q1'},
             )
@@ -210,12 +202,9 @@ class NFATest(unittest.TestCase):
             initial_state='q0',
             transitions={
                 ('q0', 'a'): {'q1'},
-                ('q1', 'a'): {'q1'},
-                ('q1', 'b'): {'q3'},
-                ('q2', 'b'): {'q3'},
-                ('q3', 'b'): {'q3'},
+                ('q0', 'b'): {'q1'},
                 },
-            final_states={'q3'},
+            final_states={'q1'},
             )
 
         union = automaton1 | automaton2
@@ -286,16 +275,19 @@ class NFATest(unittest.TestCase):
             final_states={'q2'},
             )
 
-        cleaned = automaton.remove_epsilon_transitions()
-        self.assertDictEqual({
-            ('q0', '0'): {'q2'},
-            ('q0', '1'): {'q1'},
-            ('q1', '0'): {'q0'},
-            ('q1', '1'): {'q0'},
-            ('q2', '0'): {'q0'},
-            ('q2', '1'): {'q0'},
-            }, cleaned.transitions)
-        self.assertSetEqual({'q1', 'q2'}, cleaned.final_states)
+        expected = NFA.create(
+            initial_state='q0',
+            transitions={
+                ('q0', '0'): {'q2'},
+                ('q0', '1'): {'q1'},
+                ('q1', '0'): {'q0'},
+                ('q1', '1'): {'q0'},
+                ('q2', '0'): {'q0'},
+                ('q2', '1'): {'q0'},
+                },
+            final_states={'q2'},
+            )
+        self.assertIsomorphic(expected, automaton.remove_epsilon_transitions())
 
 
 if __name__ == '__main__':

@@ -152,6 +152,14 @@ class NFA(NamedTuple):
             final_states=final_states,
             )
 
+    def accept(self, word) -> bool:
+        state = {self.initial_state}
+        for symbol in word:
+            state = self.step(state, symbol)
+            if not state:
+                return False
+        return any(q in self.final_states for q in state)
+
     def step(self, states: StateSet, symbol: Symbol) -> StateSet:
         def reachable():
             for closure in chain(self.epsilon_closure(s) for s in states):

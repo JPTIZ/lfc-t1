@@ -208,6 +208,10 @@ class NFATest(unittest.TestCase):
             )
 
         union = automaton1 | automaton2
+        self.assertTrue(union.accept('a'))
+        self.assertTrue(union.accept('b'))
+        self.assertFalse(union.accept('aa'))
+        self.assertFalse(union.accept('ab'))
         self.assertIsomorphic(expected, union)
 
     def test_epsilon_closure(self):

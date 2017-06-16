@@ -156,6 +156,9 @@ class DFA(NamedTuple):
             final_states={trans[c] for c in classes if is_final(c)},
             )
 
+    def minimize(self):
+        return self.remove_unreachable().remove_dead().merge_nondistinguishable()
+
     def accept(self, word) -> bool:
         state = self.initial_state
         for symbol in word:

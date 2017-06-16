@@ -74,6 +74,22 @@ class DFATest(unittest.TestCase):
             }, cleaned.transitions)
         self.assertSetEqual({'q1'}, cleaned.final_states)
 
+    def test_remove_dead(self):
+        automaton = DFA.create(
+            initial_state='q0',
+            transitions={
+                ('q0', 'a'): 'q1',
+                },
+            final_states={'q0'},
+            )
+
+        cleaned = automaton.remove_dead()
+        self.assertSetEqual(set(), cleaned.alphabet)
+        self.assertSetEqual({'q0'}, cleaned.states)
+        self.assertEqual('q0', cleaned.initial_state)
+        self.assertDictEqual({}, cleaned.transitions)
+        self.assertSetEqual({'q0'}, cleaned.final_states)
+
     def test_merge_nondistinguishable(self):
         # this automaton accepts 0*10* but it's bloated, taken from wikipedia
         automaton = DFA.create(

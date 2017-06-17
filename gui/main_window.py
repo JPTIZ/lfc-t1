@@ -14,7 +14,7 @@ from kivy.clock import Clock
 from functools import partial
 
 from gui.dialogs import (SaveDialog, LoadDialog, InputDialog, ConfirmDialog,
-        TransitionEditDialog, ShortSpinner)
+        TransitionEditDialog, InfoDialog, ShortSpinner)
 from gui.table import TableRow, TableCell, TableHeader
 from dfa import DFA
 
@@ -40,6 +40,20 @@ def with_state(automata, state):
     return DFA.create(automata.initial_state,
                       transitions,
                       automata.final_states)
+
+
+def with_state_as_final(automata, state):
+    print('using {} as final state'.format(state))
+    return DFA.create(automata.initial_state,
+                      automata.transitions,
+                      automata.final_states | {state})
+
+
+def without_state_as_final(automata, state):
+    print('removing {} as final state'.format(state))
+    return DFA.create(automata.initial_state,
+                      automata.transitions,
+                      automata.final_states - {state})
 
 
 class MainWindow(Widget):
@@ -112,6 +126,14 @@ class MainWindow(Widget):
     def add_symbol(self, symbol):
         self.dismiss_popup()
 
+        if not re.match('^[a-z0-9]$', symbol):
+            self.show_info_dialog(title='Error', message='Symbols must be only one lower-case letter or digit.')
+            return
+
+        if symbol in self.current_automata().alphabet:
+            self.show_info_dialog(title='Error', message='Symbol already on automata.')
+            return
+
         self.current_tab().automata = with_symbol(self.current_automata(), symbol)
         automata = self.current_tab().automata
         pprint(dict(automata._asdict()))
@@ -130,6 +152,17 @@ class MainWindow(Widget):
         self.remake_table()
         self.dismiss_popup()
 
+    def toggle_final(self, state, cell, *args):
+        if not cell.collide_point(*args[0].pos) or not args[0].is_double_tap:
+            return
+        automata = self.current_automata()
+        if state in automata.final_states:
+            automata = without_state_as_final(automata, state)
+        else:
+            automata = with_state_as_final(automata, state)
+        self.current_tab().automata = automata
+        self.remake_table()
+
     def show_clear_popup(self):
         content = ConfirmDialog(yes=self.clear, no=self.dismiss_popup)
         self._popup = Popup(title='Do you really want to clear the automata?', content=content, size_hint=(None, None), size=(320, 92))
@@ -140,6 +173,11 @@ class MainWindow(Widget):
         self._popup = Popup(title=title, content=content, size_hint=(None, None), size=(320, 92))
         self._popup.open()
         content.ids.input_box.focus = True
+
+    def show_info_dialog(self, title='Information', message='(No message to display)'):
+        content = InfoDialog(message=message, pressed_ok=self.dismiss_popup)
+        self._popup = Popup(title=title, content=content, size_hint=(None, None), size=(380, 128))
+        self._popup.open()
 
     def show_transition_edit_dialog(self, transition, title, action):
         content = TransitionEditDialog(pressed_ok=action)
@@ -176,6 +214,8 @@ class MainWindow(Widget):
         rows = {}
         automata = self.current_tab().automata
         if automata:
+            print('remaking table for:')
+            pprint(dict(automata._asdict()), indent=3)
             for char in automata.alphabet:
                 header.add_widget(TableHeader(text=char))
             for state in automata.states:
@@ -185,13 +225,15 @@ class MainWindow(Widget):
                 rows[state] = [row]
                 for char in automata.alphabet:
                     rows[state].append([])
-                print(rows[state])
+
                 state_name = state
                 if state in automata.final_states:
-                    state_name = '*' + state
+                    state_name = '*' + state_name
                 if state == automata.initial_state:
-                    state_name = '→' + state
-                row.add_widget(TableCell(text=state_name))
+                    state_name = '→' + state_name
+                cell = TableCell(text=state_name)
+                cell.on_touch_down = partial(self.toggle_final, state, cell)
+                row.add_widget(cell)
 
                 for i, char in enumerate(automata.alphabet):
                     trans = automata.transitions[(state, char)]

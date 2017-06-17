@@ -27,6 +27,11 @@ class ConfirmDialog(FloatLayout):
     no = ObjectProperty(None)
 
 
+class InfoDialog(FloatLayout):
+    message = ObjectProperty('')
+    pressed_ok = ObjectProperty(None)
+
+
 class TransitionEditDialog(FloatLayout):
     pressed_ok = ObjectProperty(None)
     value = ObjectProperty(None)

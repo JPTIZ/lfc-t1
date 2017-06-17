@@ -78,6 +78,21 @@
             text: 'No'
             on_release: root.no()
 
+
+<InfoDialog@FloatLayout>:
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: 'vertical'
+
+        Label:
+            text: root.message
+
+        Button:
+            text: 'OK'
+            on_release: root.pressed_ok()
+
+
 <ShortButton@Button>:
     size_hint: None, None
     size: 48, 32
@@ -87,4 +102,3 @@
         id: contents
         size: root.size
         pos: root.pos
-

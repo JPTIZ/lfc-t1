@@ -192,6 +192,22 @@ class DFATest(unittest.TestCase):
             (other, '1'): other,
             }, cleaned.transitions)
 
+    def test_to_nfa(self):
+        automaton = DFA.create(
+            initial_state='q0',
+            transitions={
+                ('q0', 'a'): 'q1',
+                },
+            final_states={'q1'},
+            )
+
+        nfa = automaton.to_nfa()
+        self.assertEqual(automaton.initial_state, nfa.initial_state)
+        self.assertDictEqual({
+            ('q0', 'a'): {'q1'},
+            }, nfa.transitions)
+        self.assertSetEqual(automaton.final_states, nfa.final_states)
+
     def test_dump(self):
         automaton = DFA.create(
             initial_state='q0',

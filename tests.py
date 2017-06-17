@@ -31,18 +31,29 @@ class DFATest(unittest.TestCase):
             )
 
     def test_complement(self):
-        automaton = DFA(
-            alphabet={'0', '1'},
-            states={'q0', 'q1'},
+        automaton = DFA.create(
             initial_state='q0',
             transitions={
-                ('q0', '1'): 'q1',
+                ('q0', 'a'): 'q1',
                 },
             final_states={'q1'},
             )
 
+        expected = DFA.create(
+            initial_state='q0',
+            transitions={
+                ('q0', 'a'): 'q1',
+                ('q1', 'a'): 'q2',
+                ('q2', 'a'): 'q2',
+                },
+            final_states={'q0', 'q2'},
+            )
+
         complement = ~automaton
-        self.assertEqual({'q0', 'qerr'}, complement.final_states)
+        self.assertTrue(complement.accept(''))
+        self.assertFalse(complement.accept('a'))
+        self.assertTrue(complement.accept('aa'))
+        self.assertIsomorphic(expected, complement)
 
     def test_accept(self):
         self.assertFalse(self.automaton.accept('101'))

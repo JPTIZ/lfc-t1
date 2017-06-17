@@ -2,7 +2,7 @@ import copy
 import itertools
 from collections import defaultdict
 from itertools import chain
-from typing import DefaultDict, FrozenSet, NamedTuple, Set, Tuple
+from typing import DefaultDict, FrozenSet, NamedTuple, Tuple
 
 Symbol = str
 State = str
@@ -16,11 +16,11 @@ def shrink(transitions):
 class NFA(NamedTuple):
     EPSILON = '&'
 
-    alphabet: Set[Symbol]
-    states: Set[State]
+    alphabet: FrozenSet[Symbol]
+    states: StateSet
     initial_state: State
-    transitions: DefaultDict[Tuple[Symbol, State], Set[State]]
-    final_states: Set[State]
+    transitions: DefaultDict[Tuple[Symbol, State], StateSet]
+    final_states: StateSet
 
     def __invert__(self):
         return self.complement()

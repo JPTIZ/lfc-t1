@@ -163,7 +163,7 @@ class DFA(NamedTuple):
         alphabet = {s for _, s in transitions}
 
         s = chain.from_iterable((k[0], v) for k, v in transitions.items())
-        states = {initial_state, } | set(final_states) | set(s)
+        states = {initial_state} | set(final_states) | set(s)
 
         return cls(
             frozenset(alphabet),
@@ -175,7 +175,7 @@ class DFA(NamedTuple):
 
 
 def load_dfa(fp) -> DFA:
-    raw = json.load(fp)
+    raw = json.load(fp=fp)
 
     return DFA.create(
         initial_state=raw['initial_state'],

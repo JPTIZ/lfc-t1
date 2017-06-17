@@ -68,6 +68,8 @@ class NFA(NamedTuple):
         return self.union(other)
 
     def union(self, other):
+        other = other.to_nfa()
+
         new_transitions = {
             ('q0', self.EPSILON): {f'{self.initial_state}_0',
                                    f'{other.initial_state}_1', }
@@ -216,3 +218,6 @@ class NFA(NamedTuple):
                 },
             final_states={trans[q] for q in visited if is_final(q)},
             )
+
+    def to_nfa(self):
+        return self

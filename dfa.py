@@ -150,6 +150,9 @@ class DFA(NamedTuple):
     def step(self, state: State, symbol: Symbol) -> Optional[str]:
         return self.transitions.get((state, symbol))
 
+    def to_dfa(self):
+        return self
+
     def to_nfa(self):
         from nfa import NFA  # fucking circular import
         return NFA.create(

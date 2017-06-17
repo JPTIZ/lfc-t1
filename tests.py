@@ -58,6 +58,38 @@ class DFATest(unittest.TestCase):
         self.assertTrue(complement.accept('aa'))
         self.assertIsomorphic(expected, complement)
 
+    def test_union(self):
+        automaton1 = DFA.create(
+            initial_state='q0',
+            transitions={
+                ('q0', 'a'): 'q1',
+                },
+            final_states={'q1'},
+            )
+        automaton2 = DFA.create(
+            initial_state='q0',
+            transitions={
+                ('q0', 'b'): 'q1',
+                },
+            final_states={'q1'},
+            )
+
+        expected = DFA.create(
+            initial_state='q0',
+            transitions={
+                ('q0', 'a'): 'q1',
+                ('q0', 'b'): 'q1',
+                },
+            final_states={'q1'},
+            )
+
+        union = automaton1 | automaton2
+        self.assertTrue(union.accept('a'))
+        self.assertTrue(union.accept('b'))
+        self.assertFalse(union.accept('aa'))
+        self.assertFalse(union.accept('ab'))
+        self.assertIsomorphic(expected, union)
+
     def test_accept(self):
         self.assertFalse(self.automaton.accept('101'))
         self.assertTrue(self.automaton.accept('111'))

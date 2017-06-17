@@ -5,8 +5,8 @@ from nfa import NFA
 
 class DFATest(unittest.TestCase):
     def assertIsomorphic(self, expected: DFA, value: DFA):
-        intersect = expected.minimize() & value.minimize()
-        self.assertSetEqual(set(), intersect.final_states)
+        self.assertSetEqual(set(), (expected - value).final_states)
+        self.assertSetEqual(set(), (value - expected).final_states)
 
     def setUp(self):
         self.automaton = DFA(
@@ -122,8 +122,8 @@ class DFATest(unittest.TestCase):
 
 class NFATest(unittest.TestCase):
     def assertIsomorphic(self, expected: NFA, value: NFA):
-        intersect = expected.to_dfa().minimize() & value.to_dfa().minimize()
-        self.assertSetEqual(set(), intersect.final_states)
+        self.assertSetEqual(set(), (expected - value).final_states)
+        self.assertSetEqual(set(), (value - expected).final_states)
 
     def setUp(self):
         self.automaton = NFA.create(

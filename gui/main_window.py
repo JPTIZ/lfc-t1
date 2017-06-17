@@ -41,13 +41,31 @@ class MainWindow(Widget):
     automatas = ObjectProperty([])
 
     def new_automata(self):
-        self.automatas.append(DFA.create(initial_state='q0',
-                                         transitions={},
-                                         final_states={}))
+        automata = DFA.create(initial_state='q0',
+                              transitions={},
+                              final_states={})
+        self.automatas.append(automata)
         new_tab = AutomataTab(text='Automata{}'.format(len(self.automatas)))
+        new_tab.automata = automata
         self.ids.automata_tabs.add_widget(new_tab)
         self.ids.automata_tabs.switch_to(new_tab)
         Clock.schedule_once(partial(new_tab.ids.tabs.switch_to, new_tab.ids.transition_tab))
+        self.ids.btn_close.disabled = False
+
+    def current_tab(self):
+        return self.ids.automata_tabs.current_tab
+
+    def close_current(self):
+        current = self.current_tab()
+        tabs = self.ids.automata_tabs
+        index = tabs.tab_list.index(current)
+        self.automatas.remove(current.automata)
+        tabs.remove_widget(current)
+        if len(tabs.tab_list) > 0:
+            tabs.switch_to(tabs.tab_list[index])
+        else:
+            tabs.clear_widgets()
+            self.ids.btn_close.disabled = True
 
     def load_file(self):
         content = LoadDialog(load=self.load, cancel=self.dismiss_popup, default_dir=self.default_dir)

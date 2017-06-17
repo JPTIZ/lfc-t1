@@ -1,3 +1,4 @@
+import graphviz
 import itertools
 import json
 from itertools import chain, product
@@ -160,6 +161,24 @@ class DFA(NamedTuple):
                 k: [v] for k, v in self.transitions.items()
                 }, self.final_states
             )
+
+    def to_dot(self) -> graphviz.Digraph:
+        f = graphviz.Digraph()
+        f.attr(rankdir='LR')
+
+        f.attr('node', shape='none')
+        f.node('qi')
+
+        f.attr('node', shape='doublecircle')
+        for state in self.final_states:
+            f.node(state)
+
+        f.attr('node', shape='circle')
+        f.edge('qi', self.initial_state)
+        for (src, symbol), dst in self.transitions.items():
+            f.edge(src, dst, label=symbol)
+
+        return f
 
     @classmethod
     def create(cls, initial_state, transitions, final_states):

@@ -87,28 +87,6 @@ class DFA(NamedTuple):
             final_states={q for q in self.final_states if q in reachable}
             )
 
-    def remove_dead(self):
-        alive = self.final_states.copy()
-        states = self.final_states.copy()
-
-        def alive_to(states):
-            for key in product(states, self.alphabet):
-                if self.transitions.get(key) in alive:
-                    yield key[0]
-
-        while states:
-            states = {state for state in alive_to(states)} - alive
-            alive |= states
-
-        return self.create(
-            initial_state=self.initial_state,
-            transitions={
-                k: v for k, v in self.transitions.items()
-                if k[0] in alive and v in alive
-                },
-            final_states=self.final_states
-            )
-
     def merge_nondistinguishable(self):
         classes = [self.final_states, self.states - self.final_states]
 
@@ -159,7 +137,7 @@ class DFA(NamedTuple):
             )
 
     def minimize(self):
-        return self.remove_unreachable().remove_dead().merge_nondistinguishable()
+        return self.remove_unreachable().merge_nondistinguishable().complete()
 
     def accept(self, word) -> bool:
         state = self.initial_state

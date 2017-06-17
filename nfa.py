@@ -138,7 +138,7 @@ class NFA(NamedTuple):
 
     def remove_epsilon_transitions(self):
         transitions = copy.deepcopy(self.transitions)
-        final_states = set()
+        final_states = set(self.final_states)
 
         __marker = object()
 

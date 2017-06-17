@@ -7,7 +7,7 @@ from functools import partial
 
 from gui.main_window import MainWindow
 
-from dfa import load_dfa
+from dfa import load_dfa, dump_dfa
 
 
 class FLViewer(App):
@@ -25,7 +25,10 @@ class FLViewer(App):
         self.window.dismiss_popup()
 
     def save(self, path, filename):
+        filename = os.path.join(path, filename)
         print('(stub!) saving {}'.format(filename))
+        pprint(dict(self.window.current_automata()._asdict()), width=-1)
+        dump_dfa(fp=open(filename, mode='w'), dfa=self.window.current_automata())
         self.window.default_dir = path
         self.window.dismiss_popup()
 

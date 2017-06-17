@@ -77,3 +77,14 @@
         Button:
             text: 'No'
             on_release: root.no()
+
+<ShortButton@Button>:
+    size_hint: None, None
+    size: 48, 32
+
+<TransitionEditDialog@FloatLayout>:
+    BoxLayout:
+        id: contents
+        size: root.size
+        pos: root.pos
+

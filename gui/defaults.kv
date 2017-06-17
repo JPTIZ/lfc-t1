@@ -96,7 +96,7 @@
                 Table:
                     id: transition_table
                     size_hint: None, None
-                    width: len(self.children[0].children) * 48
+                    width: len(self.children[0].children) * 48 if len(self.children) > 0 else 0
                     height: len(self.children) * 48
                     TableRow:
                         id: transition_header

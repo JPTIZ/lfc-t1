@@ -12,21 +12,34 @@
                 size: self.parent.size
                 size_hint: None, None
                 Button:
+                    id: btn_new
                     text: 'New'
                     on_press: root.new_automata()
                 Button:
+                    id: btn_load
                     text: 'Load'
                     on_press: root.load_file()
                 Button:
+                    id: btn_save
                     text: 'Save'
                     on_press: root.save_file()
+                    disabled: True
                 VSeparator
                 Button:
+                    id: btn_add_symbol
                     text: 'Add symbol'
-                    on_press: root.on_add_symbol()
+                    on_press: root.show_input_dialog('Add symbol', root.add_symbol)
+                    disabled: True
                 Button:
+                    id: btn_add_state
+                    text: 'Add state'
+                    on_press: root.add_state()
+                    disabled: True
+                Button:
+                    id: btn_clear
                     text: 'Clear'
                     on_press: root.show_clear_popup()
+                    disabled: True
                 Button:
                     id: btn_close
                     text: 'Close'

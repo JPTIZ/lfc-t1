@@ -182,3 +182,11 @@ def load_dfa(fp) -> DFA:
         transitions={(t[0], t[1]): t[2] for t in raw['transitions']},
         final_states=set(raw['final_states'])
         )
+
+
+def dump_dfa(fp, dfa: DFA):
+    json.dump(fp=fp, obj={
+        'initial_state': dfa.initial_state,
+        'transitions': [[k[0], k[1], v] for k, v in dfa.transitions.items()],
+        'final_states': list(dfa.final_states),
+        })

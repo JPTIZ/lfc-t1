@@ -1,5 +1,8 @@
 import unittest
-from dfa import DFA, load_dfa
+
+import io
+
+from dfa import DFA, dump_dfa, load_dfa
 from nfa import NFA
 
 
@@ -118,6 +121,33 @@ class DFATest(unittest.TestCase):
             (other, '0'): other,
             (other, '1'): other,
             }, cleaned.transitions)
+
+    def test_dump(self):
+        automaton = DFA.create(
+            initial_state='q0',
+            transitions={
+                ('q0', '0'): 'q0',
+                ('q0', '1'): 'q1',
+                ('q1', '0'): 'q2',
+                ('q1', '1'): 'q3',
+                ('q2', '0'): 'q4',
+                ('q2', '1'): 'q5',
+                ('q3', '0'): 'q0',
+                ('q3', '1'): 'q1',
+                ('q4', '0'): 'q2',
+                ('q4', '1'): 'q3',
+                ('q5', '0'): 'q4',
+                ('q5', '1'): 'q5',
+                },
+            final_states={'q1', 'q2', 'q3'},
+            )
+
+        out = io.StringIO()
+        dump_dfa(out, automaton)
+        out.seek(0)
+        loaded = load_dfa(out)
+
+        self.assertIsomorphic(automaton, loaded)
 
     def test_load(self):
         with open('fixture.json') as fp:

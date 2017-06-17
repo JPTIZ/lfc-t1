@@ -81,11 +81,11 @@ class DFATest(unittest.TestCase):
             final_states={'q1'},
             )
 
-        expected = NFA.create(
+        expected = DFA.create(
             initial_state='q0',
             transitions={
-                ('q0', 'a'): {'q1'},
-                ('q1', 'b'): {'q2'},
+                ('q0', 'a'): 'q1',
+                ('q1', 'b'): 'q2',
                 },
             final_states={'q2'},
             )
@@ -325,21 +325,14 @@ class NFATest(unittest.TestCase):
             final_states={'q1'},
             )
 
-        expected = NFA.create(
-            initial_state='q0',
-            transitions={
-                ('q0', 'a'): {'q1'},
-                ('q1', NFA.EPSILON): {'q2'},
-                ('q2', 'b'): {'q3'},
-                },
-            final_states={'q3'},
-            )
-
         concatenate = automaton1 + automaton2
-        self.assertTrue(concatenate.accept('ab'))
-        self.assertFalse(concatenate.accept('aa'))
-        self.assertFalse(concatenate.accept('bb'))
-        self.assertIsomorphic(concatenate, expected)
+        self.assertEqual('q0_0', concatenate.initial_state)
+        self.assertDictEqual({
+            ('q0_0', 'a'): {'q1_0'},
+            ('q1_0', NFA.EPSILON): {'q0_1'},
+            ('q0_1', 'b'): {'q1_1'},
+            }, concatenate.transitions)
+        self.assertSetEqual({'q1_1'}, concatenate.final_states)
 
     def test_union(self):
         automaton1 = NFA.create(

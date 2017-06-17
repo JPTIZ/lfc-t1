@@ -16,11 +16,13 @@ class DFA(NamedTuple):
 
     def complete(self):
         transitions = self.transitions.copy()
-        transitions.update({
-            ('qerr', symbol): 'qerr' for symbol in self.alphabet
-            })
         for state, symbol in itertools.product(self.states, self.alphabet):
             transitions.setdefault((state, symbol), 'qerr')
+
+        if transitions != self.transitions:
+            transitions.update({
+                ('qerr', symbol): 'qerr' for symbol in self.alphabet
+                })
 
         return DFA.create(
             initial_state=self.initial_state,

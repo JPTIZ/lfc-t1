@@ -39,18 +39,24 @@ class MainWindow(Widget):
     load = ObjectProperty(None)
     save = ObjectProperty(None)
     automatas = ObjectProperty([])
+    automata_count = ObjectProperty(0)
 
     def new_automata(self):
         automata = DFA.create(initial_state='q0',
                               transitions={},
                               final_states={})
+        self.automata_count += 1
+        self.add_automata(automata, 'Automata{}'.format(self.automata_count))
+
+    def add_automata(self, automata, tab_name):
         self.automatas.append(automata)
-        new_tab = AutomataTab(text='Automata{}'.format(len(self.automatas)))
+        new_tab = AutomataTab(text=tab_name)
         new_tab.automata = automata
         self.ids.automata_tabs.add_widget(new_tab)
         self.ids.automata_tabs.switch_to(new_tab)
         Clock.schedule_once(partial(new_tab.ids.tabs.switch_to, new_tab.ids.transition_tab))
         self.ids.btn_close.disabled = False
+        self.remake_table()
 
     def current_tab(self):
         return self.ids.automata_tabs.current_tab
@@ -62,7 +68,7 @@ class MainWindow(Widget):
         self.automatas.remove(current.automata)
         tabs.remove_widget(current)
         if len(tabs.tab_list) > 0:
-            tabs.switch_to(tabs.tab_list[index])
+            tabs.switch_to(tabs.tab_list[index % len(tabs.tab_list)])
         else:
             tabs.clear_widgets()
             self.ids.btn_close.disabled = True
@@ -90,7 +96,7 @@ class MainWindow(Widget):
         self.open_input_dialog('Add symbol', self.add_symbol)
 
     def current_transition_table(self):
-        return self.ids.transition_table
+        return self.current_tab().ids.transition_table
 
     def add_symbol(self, symbol):
         self.dismiss_popup()
@@ -115,23 +121,25 @@ class MainWindow(Widget):
         transition_table.add_widget(header)
 
         rows = {}
-        if self.automata:
-            for char in self.automata.alphabet:
+        automata = self.current_tab().automata
+        if automata:
+            for char in automata.alphabet:
                 header.add_widget(TableHeader(text=char))
-            for state in self.automata.states:
+            for state in automata.states:
                 row = TableRow()
                 rows[state] = [row]
-                for char in self.automata.alphabet:
+                for char in automata.alphabet:
                     rows[state].append([])
                 print(rows[state])
                 state_name = state
-                if state in self.automata.final_states:
+                if state in automata.final_states:
                     state_name = '*' + state
-                if state == self.automata.initial_state:
+                if state == automata.initial_state:
                     state_name = '→' + state
                 row.add_widget(TableCell(text=state_name))
-                for i, char in enumerate(self.automata.alphabet):
-                    trans = self.automata.transitions[(state, char)]
+
+                for i, char in enumerate(automata.alphabet):
+                    trans = automata.transitions[(state, char)]
                     if trans is not None:
                         rows[state][i + 1].append(trans)
                 transition_table.add_widget(row)

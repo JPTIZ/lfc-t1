@@ -1,3 +1,6 @@
+import os
+from pprint import pprint
+
 from kivy.app import App
 from kivy.clock import Clock
 from functools import partial
@@ -14,9 +17,10 @@ class FLViewer(App):
 
     def load(self, path, filename):
         print('loading {}'.format(filename))
-        self.window.automata = load_dfa(open(filename[0]))
-        print(self.window.automata)
-        self.window.remake_table()
+        for name in filename:
+            automata = load_dfa(open(name))
+            pprint(dict(automata._asdict()), width=-1)
+            self.window.add_automata(automata, os.path.basename(name))
         self.window.default_dir = path
         self.window.dismiss_popup()
 

@@ -111,20 +111,18 @@ class NFA(NamedTuple):
 
     @classmethod
     def create(cls, initial_state, transitions, final_states):
-        def freeze(t):
-            for k, v in t.items():
-                yield k, frozenset(v)
+        transitions = defaultdict(frozenset, {
+            k: frozenset(v) for k, v in transitions.items() if v
+            })
 
-        new_transitions = defaultdict(frozenset, freeze(transitions))
-
-        s = chain.from_iterable((k[0], *v) for k, v in new_transitions.items())
+        s = chain.from_iterable((k, *v) for (k, _), v in transitions.items())
         states = {initial_state, } | final_states | set(s)
 
         return cls(
             frozenset({c for _, c in transitions if c != cls.EPSILON}),
             frozenset(states),
             initial_state,
-            new_transitions,
+            transitions,
             frozenset(final_states),
             )
 

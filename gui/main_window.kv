@@ -1,3 +1,4 @@
+#:import ScrollEffect kivy.effects.scroll.ScrollEffect
 <MainWindow>:
     BoxLayout:
         orientation: 'vertical'
@@ -17,113 +18,19 @@
                     text: 'Load'
                     on_press: root.load_file()
                 Button:
+                    text: 'Save'
+                    on_press: root.save_file()
+                VSeparator
+                Button:
                     text: 'Add symbol'
-                    on_press: root.add_symbol()
-        TabbedPanel:
-            id: content_pane
-            canvas.before:
-                Color:
-                    rgb: (.4, .4, .4, 1)
-                Rectangle:
-                    size: self.size
-                    pos: self.pos
-                Color:
-                    rgb: (.3, .3, .3, 1.)
-                Line:
-                    points: self.x, self.top, self.right, self.top
-                    width: 1
-            tab_height: 28
-            do_default_tab: False
-            TabbedPanelItem:
-                text: 'Transitions'
-                ScrollView:
-                    Table:
-                        id: transition_table
-                        cols: 3
-                        rows: 14
-                        TableHeader:
-                            text: 'q'
-                        TableHeader:
-                            text: 'a'
-                        TableHeader:
-                            text: 'b'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-                        TableCell:
-                            text: 'placeholder'
-            TabbedPanelItem:
-                text: 'Automata'
+                    on_press: root.on_add_symbol()
+                Button:
+                    text: 'Clear'
+                    on_press: root.show_clear_popup()
+                Button:
+                    id: btn_close
+                    text: 'Close'
+                    disabled: True
+                    on_press: root.close_current()
+        FLTabbedPanel:
+            id: automata_tabs

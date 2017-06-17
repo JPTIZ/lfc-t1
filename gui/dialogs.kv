@@ -1,0 +1,79 @@
+<InputDialog@FloatLayout>:
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+
+        TextInput:
+            id: input_box
+            multiline: False
+            focus: True
+            on_text_validate: ok_button.dispatch('on_press')
+        Button:
+            id: ok_button
+            text: 'OK'
+            on_press: root.pressed_ok(input_box.text)
+
+
+<LoadDialog@FloatLayout>:
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: 'vertical'
+        FileChooserIconView:
+            id: filechooser
+            path: root.default_dir
+            on_submit: load_btn.dispatch('on_release')
+
+        BoxLayout:
+            size_hint_y: None
+            height: 30
+            Button:
+                text: 'Cancel'
+                on_release: root.cancel()
+
+            Button:
+                id: load_btn
+                text: 'Load'
+                on_release: root.load(filechooser.path, filechooser.selection)
+
+<SaveDialog@FloatLayout>:
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: 'vertical'
+        FileChooserIconView:
+            id: filechooser
+            path: root.default_dir
+            on_submit: save_btn.dispatch('on_release')
+            on_selection: file_input.text = self.selection and self.selection[0] or ''
+
+        TextInput:
+            id: file_input
+            size_hint_y: None
+            height: 30
+            multiline: False
+
+        BoxLayout:
+            size_hint_y: None
+            height: 30
+            Button:
+                text: 'Cancel'
+                on_release: root.cancel()
+
+            Button:
+                id: save_btn
+                text: 'Save'
+                on_release: root.save(filechooser.path, file_input.text)
+
+<ConfirmDialog@FloatLayout>:
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+
+        Button:
+            text: 'Yes'
+            on_release: root.yes()
+
+        Button:
+            text: 'No'
+            on_release: root.no()

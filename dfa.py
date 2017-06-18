@@ -162,7 +162,7 @@ class DFA(NamedTuple):
                 }, self.final_states
             )
 
-    def to_dot(self) -> graphviz.Digraph:
+    def to_dot(self) -> graphviz.Digraph:  # pragma: no cover
         f = graphviz.Digraph()
         f.attr(rankdir='LR')
 

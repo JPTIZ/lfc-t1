@@ -391,6 +391,10 @@ class NFATest(unittest.TestCase):
             }, union.transitions)
         self.assertSetEqual({'q1_0', 'q1_1'}, union.final_states)
 
+    def test_accept(self):
+        self.assertFalse(self.automaton.accept('aba'))
+        self.assertTrue(self.automaton.accept('abaa'))
+
     def test_epsilon_closure(self):
         self.assertSetEqual({'q0', 'q1'}, self.automaton.epsilon_closure('q1'))
 

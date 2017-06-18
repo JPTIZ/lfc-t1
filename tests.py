@@ -3,7 +3,7 @@ import unittest
 import io
 
 from dfa import DFA, dump_dfa, load_dfa
-from nfa import NFA
+from nfa import NFA, dump_nfa, load_nfa
 
 
 class DFATest(unittest.TestCase):
@@ -432,6 +432,46 @@ class NFATest(unittest.TestCase):
             ('q2', '1'): {'q0'},
             }, epsilon_free.transitions)
         self.assertSetEqual({'q1', 'q2'}, epsilon_free.final_states)
+
+    def test_dump(self):
+        automaton = NFA.create(
+            initial_state='q0',
+            transitions={
+                ('q0', '0'): {'q0'},
+                ('q0', '1'): {'q1'},
+                ('q1', '0'): {'q2'},
+                ('q1', '1'): {'q3'},
+                ('q2', '0'): {'q4'},
+                ('q2', '1'): {'q5'},
+                ('q3', '0'): {'q0'},
+                ('q3', '1'): {'q1'},
+                ('q4', '0'): {'q2'},
+                ('q4', '1'): {'q3'},
+                ('q5', '0'): {'q4'},
+                ('q5', '1'): {'q5'},
+                },
+            final_states={'q1', 'q2', 'q3'},
+            )
+
+        out = io.StringIO()
+        dump_nfa(out, automaton)
+        out.seek(0)
+        loaded = load_nfa(out)
+
+        self.assertIsomorphic(automaton, loaded)
+
+    def test_load(self):
+        with open('fixture.json') as fp:
+            automaton = load_nfa(fp)
+
+        self.assertSetEqual(self.automaton.alphabet, automaton.alphabet)
+        self.assertSetEqual(self.automaton.states, automaton.states)
+        self.assertEqual(self.automaton.initial_state,
+                         automaton.initial_state)
+        self.assertDictEqual(self.automaton.transitions,
+                             automaton.transitions)
+        self.assertSetEqual(self.automaton.final_states,
+                            automaton.final_states)
 
 
 if __name__ == '__main__':

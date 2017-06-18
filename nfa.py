@@ -1,5 +1,6 @@
 import copy
 import itertools
+import json
 from collections import defaultdict
 from itertools import chain
 from typing import DefaultDict, FrozenSet, NamedTuple, Tuple
@@ -225,3 +226,22 @@ class NFA(NamedTuple):
 
     def to_nfa(self):
         return self
+
+
+def load_nfa(fp) -> NFA:
+    raw = json.load(fp=fp)
+
+    return NFA.create(
+        initial_state=raw['initial_state'],
+        transitions={(t[0], t[1]): set(t[2]) for t in raw['transitions']},
+        final_states=set(raw['final_states'])
+        )
+
+
+def dump_nfa(fp, nfa: NFA):
+    json.dump(fp=fp, obj={
+        'initial_state': nfa.initial_state,
+        'transitions': [[k[0], k[1], list(v)]
+                        for k, v in nfa.transitions.items()],
+        'final_states': list(nfa.final_states),
+        })

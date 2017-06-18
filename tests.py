@@ -96,6 +96,38 @@ class DFATest(unittest.TestCase):
         self.assertFalse(concatenate.accept('bb'))
         self.assertIsomorphic(concatenate, expected)
 
+    def test_difference(self):
+        automaton1 = DFA.create(
+            initial_state='q0',
+            transitions={
+                ('q0', 'a'): 'q0',
+                },
+            final_states={'q0'},
+            )
+        automaton2 = DFA.create(
+            initial_state='q0',
+            transitions={
+                ('q0', 'a'): 'q1',
+                },
+            final_states={'q1'},
+            )
+
+        expected = DFA.create(
+            initial_state='q0',
+            transitions={
+                ('q0', 'a'): 'q1',
+                ('q1', 'a'): 'q2',
+                ('q2', 'a'): 'q2',
+                },
+            final_states={'q0', 'q2'},
+            )
+
+        difference = automaton1 - automaton2
+        self.assertTrue(difference.accept(''))
+        self.assertTrue(difference.accept('aa'))
+        self.assertFalse(difference.accept('a'))
+        self.assertIsomorphic(expected, difference)
+
     def test_union(self):
         automaton1 = DFA.create(
             initial_state='q0',

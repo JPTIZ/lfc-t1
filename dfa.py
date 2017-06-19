@@ -138,7 +138,8 @@ class DFA(NamedTuple):
             )
 
     def minimize(self):
-        return self.remove_unreachable().merge_nondistinguishable().complete()
+        minimal = self.remove_unreachable().merge_nondistinguishable()
+        return minimal.rename().complete()
 
     def accept(self, word) -> bool:
         state = self.initial_state

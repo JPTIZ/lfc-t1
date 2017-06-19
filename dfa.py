@@ -151,6 +151,32 @@ class DFA(NamedTuple):
     def step(self, state: State, symbol: Symbol) -> Optional[str]:
         return self.transitions.get((state, symbol))
 
+    def rename(self):
+        trans, counter = {}, 0
+        states = [self.initial_state]
+
+        alphabet = sorted(self.alphabet)
+        while states:
+            state = states.pop(0)
+
+            trans[state] = f'q{counter}'
+            counter += 1
+
+            for symbol in alphabet:
+                step = self.step(state, symbol)
+                if step and step not in trans:
+                    states.append(step)
+
+        return DFA.create(
+            initial_state='q0',
+            transitions={
+                (trans[k[0]], k[1]): trans[v]
+                for k, v in self.transitions.items()
+                },
+            final_states={trans[q] for q in self.final_states},
+            )
+
+
     def to_dfa(self):
         return self
 

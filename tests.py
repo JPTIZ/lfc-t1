@@ -259,42 +259,18 @@ class DFATest(unittest.TestCase):
         self.assertSetEqual(automaton.final_states, nfa.final_states)
 
     def test_dump(self):
-        automaton = DFA.create(
-            initial_state='q0',
-            transitions={
-                ('q0', '0'): 'q0',
-                ('q0', '1'): 'q1',
-                ('q1', '0'): 'q2',
-                ('q1', '1'): 'q3',
-                ('q2', '0'): 'q4',
-                ('q2', '1'): 'q5',
-                ('q3', '0'): 'q0',
-                ('q3', '1'): 'q1',
-                ('q4', '0'): 'q2',
-                ('q4', '1'): 'q3',
-                ('q5', '0'): 'q4',
-                ('q5', '1'): 'q5',
-                },
-            final_states={'q1', 'q2', 'q3'},
-            )
-
         out = io.StringIO()
-        dump_dfa(out, automaton)
+        dump_dfa(out, self.automaton)
         out.seek(0)
-        loaded = load_dfa(out)
+        automaton = load_dfa(out)
 
-        self.assertIsomorphic(automaton, loaded)
+        self.assertEqual(self.automaton, automaton)
 
     def test_load(self):
-        with open('fixture.json') as fp:
+        with open('dfa.json') as fp:
             automaton = load_dfa(fp)
 
-        self.assertSetEqual(self.automaton.alphabet, automaton.alphabet)
-        self.assertSetEqual(self.automaton.states, automaton.states)
-        self.assertEqual(self.automaton.initial_state, automaton.initial_state)
-        self.assertDictEqual(self.automaton.transitions, automaton.transitions)
-        self.assertSetEqual(self.automaton.final_states,
-                            automaton.final_states)
+        self.assertEqual(self.automaton, automaton)
 
 
 class NFATest(unittest.TestCase):
@@ -306,13 +282,20 @@ class NFATest(unittest.TestCase):
         self.automaton = NFA.create(
             initial_state='q0',
             transitions={
-                ('q0', 'a'): {'q0'},
-                ('q0', 'b'): {'q1'},
-                ('q1', NFA.EPSILON): {'q0'},
-                ('q1', 'a'): {'q2'},
-                ('q2', 'a'): {'q3'},
+                ('q0', '0'): {'q0'},
+                ('q0', '1'): {'q1'},
+                ('q1', '0'): {'q2'},
+                ('q1', '1'): {'q3'},
+                ('q2', '0'): {'q4'},
+                ('q2', '1'): {'q5'},
+                ('q3', '0'): {'q0'},
+                ('q3', '1'): {'q1'},
+                ('q4', '0'): {'q2'},
+                ('q4', '1'): {'q3'},
+                ('q5', '0'): {'q4'},
+                ('q5', '1'): {'q5'},
                 },
-            final_states={'q3'},
+            final_states={'q1', 'q2', 'q3'},
             )
 
     def test_complete(self):
@@ -410,14 +393,35 @@ class NFATest(unittest.TestCase):
         self.assertSetEqual({'q1_0', 'q1_1'}, union.final_states)
 
     def test_accept(self):
-        self.assertFalse(self.automaton.accept('aba'))
-        self.assertTrue(self.automaton.accept('abaa'))
+        self.assertFalse(self.automaton.accept('0110'))
+        self.assertTrue(self.automaton.accept('0010'))
 
     def test_epsilon_closure(self):
-        self.assertSetEqual({'q0', 'q1'}, self.automaton.epsilon_closure('q1'))
+        automaton = NFA.create(
+            initial_state='q0',
+            transitions={
+                ('q0', 'a'): {'q0'},
+                ('q0', NFA.EPSILON): {'q1'},
+                ('q1', 'b'): {'q1'},
+                },
+            final_states={'q1'},
+            )
+
+        self.assertSetEqual({'q0', 'q1'}, automaton.epsilon_closure('q0'))
 
     def test_step(self):
-        self.assertSetEqual({'q0', 'q1'}, self.automaton.step({'q0'}, 'b'))
+        automaton = NFA.create(
+            initial_state='q0',
+            transitions={
+                ('q0', 'a'): {'q0'},
+                ('q0', NFA.EPSILON): {'q1'},
+                ('q1', 'b'): {'q1'},
+                },
+            final_states={'q1'},
+            )
+
+        self.assertSetEqual({'q0', 'q1'}, automaton.step({'q0'}, 'a'))
+        self.assertSetEqual({'q1'}, automaton.step({'q0', 'q1'}, 'b'))
 
     def test_to_dfa(self):
         # this automaton accepts a+
@@ -488,44 +492,18 @@ class NFATest(unittest.TestCase):
         self.assertSetEqual({'q1', 'q2'}, epsilon_free.final_states)
 
     def test_dump(self):
-        automaton = NFA.create(
-            initial_state='q0',
-            transitions={
-                ('q0', '0'): {'q0'},
-                ('q0', '1'): {'q1'},
-                ('q1', '0'): {'q2'},
-                ('q1', '1'): {'q3'},
-                ('q2', '0'): {'q4'},
-                ('q2', '1'): {'q5'},
-                ('q3', '0'): {'q0'},
-                ('q3', '1'): {'q1'},
-                ('q4', '0'): {'q2'},
-                ('q4', '1'): {'q3'},
-                ('q5', '0'): {'q4'},
-                ('q5', '1'): {'q5'},
-                },
-            final_states={'q1', 'q2', 'q3'},
-            )
-
         out = io.StringIO()
-        dump_nfa(out, automaton)
+        dump_nfa(out, self.automaton)
         out.seek(0)
-        loaded = load_nfa(out)
+        automaton = load_nfa(out)
 
-        self.assertIsomorphic(automaton, loaded)
+        self.assertEqual(self.automaton, automaton)
 
     def test_load(self):
-        with open('fixture.json') as fp:
+        with open('nfa.json') as fp:
             automaton = load_nfa(fp)
 
-        self.assertSetEqual(self.automaton.alphabet, automaton.alphabet)
-        self.assertSetEqual(self.automaton.states, automaton.states)
-        self.assertEqual(self.automaton.initial_state,
-                         automaton.initial_state)
-        self.assertDictEqual(self.automaton.transitions,
-                             automaton.transitions)
-        self.assertSetEqual(self.automaton.final_states,
-                            automaton.final_states)
+        self.assertEqual(self.automaton, automaton)
 
 
 if __name__ == '__main__':

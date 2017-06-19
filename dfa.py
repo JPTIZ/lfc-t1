@@ -107,6 +107,9 @@ class DFA(NamedTuple):
             new_classes = []
 
             for klass in (s.copy() for s in classes):
+                if not klass:
+                    continue
+
                 first = next(q for q in klass)
 
                 equiv_states = frozenset([first, *equivalents(first, klass)])

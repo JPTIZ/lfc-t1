@@ -24,11 +24,12 @@ class FLViewer(App):
         self.window.default_dir = path
         self.window.dismiss_popup()
 
-    def save(self, path, filename):
-        filename = os.path.join(path, filename)
+    def save(self, path, filename_):
+        filename = os.path.join(path, filename_)
         print('(stub!) saving {}'.format(filename))
         pprint(dict(self.window.current_automata()._asdict()), width=-1)
         dump_dfa(fp=open(filename, mode='w'), dfa=self.window.current_automata())
+        self.window.current_tab().text = filename_
         self.window.default_dir = path
         self.window.dismiss_popup()
 

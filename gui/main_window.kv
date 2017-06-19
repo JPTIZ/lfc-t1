@@ -36,6 +36,12 @@
                     on_press: root.add_state()
                     disabled: True
                 Button:
+                    id: btn_apply_operation
+                    text: 'Apply Op.'
+                    on_press: root.show_operation_dialog()
+                    disabled: True
+                VSeparator
+                Button:
                     id: btn_clear
                     text: 'Clear'
                     on_press: root.show_clear_popup()

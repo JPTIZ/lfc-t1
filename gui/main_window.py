@@ -1,6 +1,6 @@
 '''Module for main window.'''
 import os
-import re
+import string
 
 import kivy
 from kivy.factory import Factory
@@ -14,7 +14,8 @@ from kivy.clock import Clock
 from functools import partial
 
 from gui.dialogs import (SaveDialog, LoadDialog, InputDialog, ConfirmDialog,
-        TransitionEditDialog, InfoDialog, ShortSpinner)
+        TransitionEditDialog, InfoDialog, ShortSpinner, Operation,
+        OperationSelectDialog)
 from gui.table import TableRow, TableCell, TableHeader
 from dfa import DFA
 
@@ -72,7 +73,7 @@ class MainWindow(Widget):
         return self.current_tab().ids.transition_table
 
     def new_automata(self):
-        automata = DFA.create(initial_state='q0',
+        automata = DFA.create(initial_state='A',
                               transitions={},
                               final_states={})
         self.automata_count += 1
@@ -88,6 +89,7 @@ class MainWindow(Widget):
             self.ids.btn_save.disabled = \
             self.ids.btn_add_symbol.disabled = \
             self.ids.btn_add_state.disabled = \
+            self.ids.btn_apply_operation.disabled = \
             self.ids.btn_clear.disabled = False
         self.remake_table()
 
@@ -104,10 +106,11 @@ class MainWindow(Widget):
                 self.ids.btn_save.disabled = \
                 self.ids.btn_add_symbol.disabled = \
                 self.ids.btn_add_state.disabled = \
+                self.ids.btn_apply_operation.disabled = \
                 self.ids.btn_clear.disabled = True
 
     def clear(self):
-        self.current_tab().automata = DFA.create(initial_state='q0',
+        self.current_tab().automata = DFA.create(initial_state='A',
                               transitions={},
                               final_states={})
         self.remake_table()
@@ -126,7 +129,7 @@ class MainWindow(Widget):
     def add_symbol(self, symbol):
         self.dismiss_popup()
 
-        if not re.match('^[a-z0-9]$', symbol):
+        if len(symbol) != 1 or symbol not in string.ascii_lowercase + string.digits:
             self.show_info_dialog(title='Error', message='Symbols must be only one lower-case letter or digit.')
             return
 
@@ -141,12 +144,24 @@ class MainWindow(Widget):
         self.remake_table()
 
     def add_state(self):
-        state = 'q{}'.format(len(self.current_automata().states) - 1)
+        state = string.ascii_uppercase[len(self.current_automata().states) - 1]
+        if state >= 'Z':
+            self.ids.btn_add_state.disabled = True
         self.current_tab().automata = with_state(self.current_automata(), state)
         self.remake_table()
 
+    def apply_operation(self, operation):
+        if operation == Operation.MINIMIZE:
+            self.minimize()
+        self.remake_table()
+        self.dismiss_popup()
+
+    def minimize(self):
+        self.current_tab().automata = self.current_automata().minimize()
+        print('minimizing (I think)')
+
     def update_transition(self, transition, content, spinner):
-        print('updating {} to {}'.format(transition, content.value))
+        print(f'updating {transition} to {content.value}')
         automata = self.current_automata()
         automata.transitions[transition] = content.value
         self.remake_table()
@@ -168,6 +183,11 @@ class MainWindow(Widget):
         self._popup = Popup(title='Do you really want to clear the automata?', content=content, size_hint=(None, None), size=(320, 92))
         self._popup.open()
 
+    def show_operation_dialog(self):
+        content = OperationSelectDialog(selected_operation=self.apply_operation, cancel=self.dismiss_popup)
+        self._popup = Popup(title='Select an operation:', content=content, size_hint=(None, None), size=(140, 320))
+        self._popup.open()
+
     def show_input_dialog(self, title, action):
         content = InputDialog(pressed_ok=action)
         self._popup = Popup(title=title, content=content, size_hint=(None, None), size=(320, 92))
@@ -187,13 +207,16 @@ class MainWindow(Widget):
             content.value = text
         spinner.bind(text=update_content_value)
         content.ids.contents.add_widget(spinner)
-        content.ids.contents.add_widget(Button(text='OK',
-                                               size_hint=(None, None),
-                                               size=(48, 32),
-                                               on_release=partial(
-                                                            self.update_transition,
-                                                            transition,
-                                                            content)))
+        content.ids.contents.add_widget(Button(
+            text='OK',
+            size_hint=(None, None),
+            size=(48, 32),
+            on_release=partial(
+                self.update_transition,
+                transition,
+                content
+            )
+        ))
         self._popup = Popup(title=title, content=content, size_hint=(None, None), size=(320, 92))
         self._popup.open()
 
@@ -218,12 +241,13 @@ class MainWindow(Widget):
             pprint(dict(automata._asdict()), indent=3)
             for char in automata.alphabet:
                 header.add_widget(TableHeader(text=char))
-            for state in automata.states:
+            alphabet = sorted(automata.alphabet)
+            for state in sorted(automata.states):
                 if state is '-':
                     continue
                 row = TableRow()
                 rows[state] = [row]
-                for char in automata.alphabet:
+                for char in alphabet:
                     rows[state].append([])
 
                 state_name = state
@@ -245,7 +269,7 @@ class MainWindow(Widget):
                 for i, destiny in enumerate(row):
                     cell = TableCell(text='[-]')
                     if len(destiny) > 0:
-                        cell.text = re.sub('\'', '', str(destiny))
+                        cell.text = ''.join(destiny).replace('\'', '')
                     cell.transition = (state, list(automata.alphabet)[i])
                     cell.on_touch_down = partial(self.edit_cell, cell, j, i)
                     rows[state][0].add_widget(cell)

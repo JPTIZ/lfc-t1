@@ -1,9 +1,16 @@
 import os
 
+from enum import Enum
+
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.button import Button
 from kivy.uix.spinner import Spinner
 from kivy.properties import ObjectProperty
+
+
+class Operation(Enum):
+    MINIMIZE = 0
+
 
 class SaveDialog(FloatLayout):
     save = ObjectProperty(None)
@@ -43,3 +50,8 @@ class ShortButton(Button):
 
 class ShortSpinner(Spinner):
     option_cls = ObjectProperty(ShortButton)
+
+
+class OperationSelectDialog(FloatLayout):
+    selected_operation = ObjectProperty(None)
+    cancel = ObjectProperty(None)

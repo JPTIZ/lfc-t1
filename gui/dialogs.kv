@@ -1,3 +1,4 @@
+#:import Operation gui.dialogs.Operation
 <InputDialog@FloatLayout>:
     BoxLayout:
         size: root.size
@@ -102,3 +103,21 @@
         id: contents
         size: root.size
         pos: root.pos
+
+
+<OperationSelectDialog@FloatLayout>:
+    BoxLayout:
+        id: contents
+        size: root.size
+        pos: root.pos
+        orientation: 'vertical'
+
+        Button:
+            text: 'Minimize'
+            on_release: root.selected_operation(Operation.MINIMIZE)
+
+        Button:
+            text: 'Cancel'
+            on_release: root.cancel()
+
+        Widget:

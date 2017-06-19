@@ -43,9 +43,9 @@ class DFATest(unittest.TestCase):
             )
 
         complete = automaton.complete()
-        self.assertSetEqual({'q0', 'q1', 'qerr'}, complete.states)
-        self.assertEqual('qerr', complete.transitions[('q1', 'a')])
-        self.assertEqual('qerr', complete.transitions[('qerr', 'a')])
+        self.assertSetEqual({'q0', 'q1', '-'}, complete.states)
+        self.assertEqual('-', complete.transitions[('q1', 'a')])
+        self.assertEqual('-', complete.transitions[('-', 'a')])
 
     def test_complement(self):
         automaton = DFA.create(
@@ -60,10 +60,10 @@ class DFATest(unittest.TestCase):
         self.assertEqual('q0', complement.initial_state)
         self.assertDictEqual({
             ('q0', 'a'): 'q1',
-            ('q1', 'a'): 'qerr',
-            ('qerr', 'a'): 'qerr',
+            ('q1', 'a'): '-',
+            ('-', 'a'): '-',
             }, complement.transitions)
-        self.assertSetEqual({'q0', 'qerr'}, complement.final_states)
+        self.assertSetEqual({'q0', '-'}, complement.final_states)
 
     def test_concatenate(self):
         automaton1 = DFA.create(
@@ -308,9 +308,9 @@ class NFATest(unittest.TestCase):
             )
 
         complete = automaton.complete()
-        self.assertSetEqual({'q0', 'q1', 'qerr'}, complete.states)
-        self.assertSetEqual({'qerr'}, complete.transitions[('q1', 'a')])
-        self.assertSetEqual({'qerr'}, complete.transitions[('qerr', 'a')])
+        self.assertSetEqual({'q0', 'q1', '-'}, complete.states)
+        self.assertSetEqual({'-'}, complete.transitions[('q1', 'a')])
+        self.assertSetEqual({'-'}, complete.transitions[('-', 'a')])
 
         # should not add error state to complete automaton
         automaton = NFA.create(
@@ -337,10 +337,10 @@ class NFATest(unittest.TestCase):
         self.assertEqual('q0', complement.initial_state)
         self.assertDictEqual({
             ('q0', 'a'): {'q1'},
-            ('q1', 'a'): {'qerr'},
-            ('qerr', 'a'): {'qerr'},
+            ('q1', 'a'): {'-'},
+            ('-', 'a'): {'-'},
             }, complement.transitions)
-        self.assertSetEqual({'q0', 'qerr'}, complement.final_states)
+        self.assertSetEqual({'q0', '-'}, complement.final_states)
 
     def test_concatenate(self):
         automaton1 = NFA.create(

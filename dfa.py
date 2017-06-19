@@ -18,11 +18,11 @@ class DFA(NamedTuple):
     def complete(self):
         transitions = self.transitions.copy()
         for state, symbol in itertools.product(self.states, self.alphabet):
-            transitions.setdefault((state, symbol), 'qerr')
+            transitions.setdefault((state, symbol), '-')
 
         if transitions != self.transitions:
             transitions.update({
-                ('qerr', symbol): 'qerr' for symbol in self.alphabet
+                ('-', symbol): '-' for symbol in self.alphabet
                 })
 
         return DFA.create(

@@ -94,7 +94,7 @@ class NFA(NamedTuple):
             )
 
     def complete(self):
-        qerr = frozenset({'qerr'})
+        qerr = frozenset({'-'})
 
         transitions = copy.deepcopy(shrink(self.transitions))
         for (state, symbol) in itertools.product(self.states, self.alphabet):
@@ -103,7 +103,7 @@ class NFA(NamedTuple):
 
         if transitions != self.transitions:
             transitions.update({
-                ('qerr', symbol): qerr for symbol in self.alphabet
+                ('-', symbol): qerr for symbol in self.alphabet
                 })
 
         return NFA.create(

@@ -153,6 +153,7 @@ class DFA(NamedTuple):
         return self.transitions.get((state, symbol))
 
     def rename(self):
+        import string
         trans, counter = {}, 0
         states = [self.initial_state]
 
@@ -160,7 +161,7 @@ class DFA(NamedTuple):
         while states:
             state = states.pop(0)
 
-            trans[state] = f'q{counter}'
+            trans[state] = f'{string.ascii_uppercase[counter]}'
             counter += 1
 
             for symbol in alphabet:
@@ -169,7 +170,7 @@ class DFA(NamedTuple):
                     states.append(step)
 
         return DFA.create(
-            initial_state='q0',
+            initial_state='A',
             transitions={
                 (trans[k[0]], k[1]): trans[v]
                 for k, v in self.transitions.items()

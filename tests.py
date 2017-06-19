@@ -166,21 +166,21 @@ class DFATest(unittest.TestCase):
 
     def test_rename(self):
         automaton = DFA.create(
-            initial_state='q2',
+            initial_state='C',
             transitions={
-                ('q2', 'a'): 'q1',
-                ('q2', 'b'): 'q0',
+                ('C', 'a'): 'B',
+                ('C', 'b'): 'A',
                 },
-            final_states={'q0'},
+            final_states={'A'},
             )
 
         renamed = automaton.rename()
-        self.assertEqual('q0', renamed.initial_state)
+        self.assertEqual('A', renamed.initial_state)
         self.assertDictEqual({
-            ('q0', 'a'): 'q1',
-            ('q0', 'b'): 'q2',
+            ('A', 'a'): 'B',
+            ('A', 'b'): 'C',
             }, renamed.transitions)
-        self.assertSetEqual({'q2'}, renamed.final_states)
+        self.assertSetEqual({'C'}, renamed.final_states)
 
     def test_step(self):
         self.assertEqual(self.automaton.step('q0', '0'), 'q0')

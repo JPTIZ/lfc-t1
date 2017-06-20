@@ -236,7 +236,7 @@ class NFA(NamedTuple):
         f.attr(rankdir='LR')
 
         f.attr('node', shape='none')
-        f.node('qi')
+        f.node('qi', label='')
 
         f.attr('node', shape='doublecircle')
         for state in self.final_states:
@@ -246,7 +246,8 @@ class NFA(NamedTuple):
         f.edge('qi', self.initial_state)
         for (src, symbol), dst in self.transitions.items():
             for q in dst:
-                f.edge(src, q, label=symbol)
+                if src != '-' and dst != '-':
+                    f.edge(src, q, label=symbol)
 
         return f
 

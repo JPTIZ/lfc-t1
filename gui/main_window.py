@@ -295,9 +295,12 @@ class MainWindow(Widget):
                     cell.on_touch_down = partial(self.edit_cell, cell, j, i)
                     rows[state][0].add_widget(cell)
             # Bring me to life - Automata
-            path = automata.to_dot().render(view=False, cleanup=True)
-            self.current_tab().ids.automata_image.source = path
-            self.current_tab().ids.automata_image.reload()
+            try:
+                path = automata.to_dot().render(view=False, cleanup=True)
+                self.current_tab().ids.automata_image.source = path
+                self.current_tab().ids.automata_image.reload()
+            except:
+                print('Error loading automata view.')
 
         transition_table.width = len(transition_table.children[0].children) * 48
         transition_table.height = len(transition_table.children) * 48

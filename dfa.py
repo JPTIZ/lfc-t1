@@ -198,7 +198,7 @@ class DFA(NamedTuple):
         f.attr(rankdir='LR')
 
         f.attr('node', shape='none')
-        f.node('qi')
+        f.node('qi', label='')
 
         f.attr('node', shape='doublecircle')
         for state in self.final_states:
@@ -207,7 +207,8 @@ class DFA(NamedTuple):
         f.attr('node', shape='circle')
         f.edge('qi', self.initial_state)
         for (src, symbol), dst in self.transitions.items():
-            f.edge(src, dst, label=symbol)
+            if (src != '-' and dst != '-') or '-' in self.final_states:
+                f.edge(src, dst, label=symbol)
 
         return f
 

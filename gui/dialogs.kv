@@ -113,10 +113,12 @@
         orientation: 'vertical'
 
         Button:
+            pos_hint: {'center_x': 0.5}
             text: 'Minimize'
             on_release: root.selected_operation(Operation.MINIMIZE)
 
         Button:
+            pos_hint: {'center_x': 0.5}
             text: 'Cancel'
             on_release: root.cancel()
 

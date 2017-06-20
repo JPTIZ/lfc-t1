@@ -232,7 +232,7 @@ class NFA(NamedTuple):
         return self
 
     def to_dot(self) -> graphviz.Digraph:  # pragma: no cover
-        f = graphviz.Digraph()
+        f = graphviz.Digraph(format='png')
         f.attr(rankdir='LR')
 
         f.attr('node', shape='none')

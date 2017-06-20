@@ -116,3 +116,13 @@
         TabbedPanelItem:
             id: automata_view
             text: 'Automata'
+            Image:
+                canvas.before:
+                    Color:
+                        rgb: (1, 1, 1)
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+                id: automata_image
+                size_hint: 1, 1
+                source: ''

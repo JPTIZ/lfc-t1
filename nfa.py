@@ -5,6 +5,8 @@ from collections import defaultdict
 from itertools import chain
 from typing import DefaultDict, FrozenSet, NamedTuple, Tuple
 
+import graphviz
+
 Symbol = str
 State = str
 StateSet = FrozenSet[State]
@@ -228,6 +230,25 @@ class NFA(NamedTuple):
 
     def to_nfa(self):
         return self
+
+    def to_dot(self) -> graphviz.Digraph:  # pragma: no cover
+        f = graphviz.Digraph()
+        f.attr(rankdir='LR')
+
+        f.attr('node', shape='none')
+        f.node('qi')
+
+        f.attr('node', shape='doublecircle')
+        for state in self.final_states:
+            f.node(state)
+
+        f.attr('node', shape='circle')
+        f.edge('qi', self.initial_state)
+        for (src, symbol), dst in self.transitions.items():
+            for q in dst:
+                f.edge(src, q, label=symbol)
+
+        return f
 
 
 def load_nfa(fp) -> NFA:

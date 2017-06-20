@@ -28,6 +28,7 @@ class AutomataTab(TabbedPanelItem):
 
 
 def with_symbol(automata, symbol):
+    '''Generates an automata based on another, but with a new given symbol.'''
     transitions = automata.transitions
     for state in automata.states:
         transitions[(state, symbol)] = {'-'}
@@ -36,6 +37,7 @@ def with_symbol(automata, symbol):
                       automata.final_states)
 
 def with_state(automata, state):
+    '''Generates an automata based on another, but with a new given state.'''
     transitions = automata.transitions
     for symbol in automata.alphabet:
         transitions[(state, symbol)] = {'-'}
@@ -45,27 +47,34 @@ def with_state(automata, state):
 
 
 def toggle_final_state(automata, state):
+    '''Generates an automata based on another, but if the given state is final,
+    then it becomes a non-final and vice-versa.'''
     return automata.create(automata.initial_state,
                       automata.transitions,
                       automata.final_states ^ {state})
 
 
 class MainWindow(Widget):
+    '''The main app window.'''
     default_dir = ObjectProperty(os.getcwd())
     load = ObjectProperty(None)
     save = ObjectProperty(None)
     automata_count = ObjectProperty(0)
 
     def current_tab(self):
+        '''Gets the current selected tab.'''
         return self.ids.automata_tabs.current_tab
 
     def current_automata(self):
+        '''Gets the current selected automata.'''
         return self.current_tab().automata
 
     def current_transition_table(self):
+        '''Gets the current transition table.'''
         return self.current_tab().ids.transition_table
 
     def new_automata(self):
+        '''Creates a new tab with an empty automata.'''
         automata = NFA.create(initial_state='A',
                               transitions={},
                               final_states=set())
@@ -73,6 +82,7 @@ class MainWindow(Widget):
         self.add_automata(automata, 'Automata{}'.format(self.automata_count))
 
     def add_automata(self, automata, tab_name):
+        '''Adds tab with given automata for editing.'''
         new_tab = AutomataTab(text=tab_name)
         new_tab.automata = automata
         self.ids.automata_tabs.add_widget(new_tab)
@@ -87,6 +97,7 @@ class MainWindow(Widget):
         self.remake_table()
 
     def close_current(self):
+        '''Closes current automata tab.'''
         current = self.current_tab()
         tabs = self.ids.automata_tabs
         index = tabs.tab_list.index(current)
@@ -103,6 +114,7 @@ class MainWindow(Widget):
                 self.ids.btn_clear.disabled = True
 
     def clear(self):
+        '''Clears current automata.'''
         self.current_tab().automata = NFA.create(initial_state='A',
                               transitions={},
                               final_states=set())
@@ -110,16 +122,19 @@ class MainWindow(Widget):
         self.dismiss_popup()
 
     def load_file(self):
+        '''Loads automata from user selected file.'''
         content = LoadDialog(load=self.load, cancel=self.dismiss_popup, default_dir=self.default_dir)
         self._popup = Popup(title='Load', content=content, size_hint=(0.9, 0.9))
         self._popup.open()
 
     def save_file(self):
+        '''Saves automata to user selected file.'''
         content = SaveDialog(save=self.save, cancel=self.dismiss_popup, default_dir=self.default_dir)
         self._popup = Popup(title='Save', content=content, size_hint=(0.9, 0.9))
         self._popup.open()
 
     def add_symbol(self, symbol):
+        '''Adds symbol to current automata.'''
         self.dismiss_popup()
 
         if len(symbol) != 1 or symbol not in string.ascii_lowercase + string.digits:
@@ -137,6 +152,7 @@ class MainWindow(Widget):
         self.remake_table()
 
     def add_state(self):
+        '''Adds new state to current automata.'''
         try:
             state = string.ascii_uppercase[len(self.current_automata().states - {'-'})]
         except IndexError:
@@ -146,16 +162,19 @@ class MainWindow(Widget):
         self.remake_table()
 
     def apply_operation(self, operation):
+        '''Applies operation to current automata.'''
         if operation == Operation.MINIMIZE:
             self.minimize().minimize()
         self.remake_table()
         self.dismiss_popup()
 
     def minimize(self):
+        '''Minimizes current automata.'''
         self.current_tab().automata = self.current_automata().to_dfa().minimize().to_nfa()
         return self
 
     def update_transition(self, transition, content, spinner):
+        '''Updates transition with new content's value.'''
         print(f'updating {transition} to {content.value}')
         automata = self.current_automata()
         automata.transitions[transition] = {content.value}
@@ -163,6 +182,7 @@ class MainWindow(Widget):
         self.dismiss_popup()
 
     def toggle_final(self, state, cell, *args):
+        '''Toggles state as final or not.'''
         if not cell.collide_point(*args[0].pos) or not args[0].is_double_tap:
             return
         automata = self.current_automata()
@@ -174,27 +194,32 @@ class MainWindow(Widget):
         self.remake_table()
 
     def show_clear_popup(self):
+        '''Shows popup to confirm automata cleaning.'''
         content = ConfirmDialog(yes=self.clear, no=self.dismiss_popup)
         self._popup = Popup(title='Do you really want to clear the automata?', content=content, size_hint=(None, None), size=(320, 92))
         self._popup.open()
 
     def show_operation_dialog(self):
+        '''Shows dialog for selecting operations to apply on automata.'''
         content = OperationSelectDialog(selected_operation=self.apply_operation, cancel=self.dismiss_popup)
         self._popup = Popup(title='Select an operation:', content=content, size_hint=(None, None), size=(140, 320))
         self._popup.open()
 
     def show_input_dialog(self, title, action):
+        '''Shows text input dialog with given title and action as callback.'''
         content = InputDialog(pressed_ok=action)
         self._popup = Popup(title=title, content=content, size_hint=(None, None), size=(320, 92))
         self._popup.open()
         content.ids.input_box.focus = True
 
     def show_info_dialog(self, title='Information', message='(No message to display)'):
+        '''Shows message dialog.'''
         content = InfoDialog(message=message, pressed_ok=self.dismiss_popup)
         self._popup = Popup(title=title, content=content, size_hint=(None, None), size=(380, 128))
         self._popup.open()
 
     def show_transition_edit_dialog(self, transition, title, action):
+        '''Shows transition edit dialog.'''
         content = TransitionEditDialog(pressed_ok=action)
         spinner = ShortSpinner(text='State', values=list({'-'} | self.current_automata().states), size_hint=(None, None), size=(48, 32))
         def update_content_value(sp_, text):
@@ -215,12 +240,14 @@ class MainWindow(Widget):
         self._popup.open()
 
     def dismiss_popup(self):
+        '''Closes current opened popup.'''
         try:
             self._popup.dismiss()
         except AttributeError as e:
             print('no popup to dismiss')
 
     def remake_table(self):
+        '''Regenerates current table and automata view image.'''
         transition_table = self.current_transition_table()
         transition_table.clear_widgets()
 
@@ -275,9 +302,7 @@ class MainWindow(Widget):
         transition_table.width = len(transition_table.children[0].children) * 48
         transition_table.height = len(transition_table.children) * 48
 
-
-
-
     def edit_cell(self, cell, j, i, *args):
+        '''Edits cell if it was double-clicked.'''
         if cell.collide_point(*args[0].pos) and args[0].is_double_tap:
             self.show_transition_edit_dialog(cell.transition, 'Edit transition {}'.format(cell.transition), self.update_transition)

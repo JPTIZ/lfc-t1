@@ -268,8 +268,10 @@ class MainWindow(Widget):
                 row = rows[state][1:]
                 for i, destiny in enumerate(row):
                     cell = TableCell(text='[-]')
-                    if len(destiny) > 0:
-                        cell.text = ''.join(destiny).replace('\'', '')
+                    if isinstance(destiny, str):
+                        cell.text = destiny
+                    else:
+                        cell.text = ','.join(destiny)
                     cell.transition = (state, list(automata.alphabet)[i])
                     cell.on_touch_down = partial(self.edit_cell, cell, j, i)
                     rows[state][0].add_widget(cell)

@@ -225,6 +225,7 @@ class MainWindow(Widget):
         def update_content_value(sp_, text):
             content.value = text
         spinner.bind(text=update_content_value)
+        spinner.text = str(list(self.current_automata().transitions[transition])[0])
         content.ids.contents.add_widget(spinner)
         content.ids.contents.add_widget(Button(
             text='OK',

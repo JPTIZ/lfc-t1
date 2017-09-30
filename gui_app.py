@@ -35,7 +35,7 @@ class FLViewer(App):
 
     def save(self, path, filename_):
         '''Saves a JSON file with the window's current automata definition.'''
-        print('saving {}'.format(filename))
+        print('saving {}'.format(filename_))
         filename = os.path.join(path, filename_)
         pprint(dict(self.window.current_automata()._asdict()), width=-1)
         dump_dfa(fp=open(filename, mode='w'), dfa=self.window.current_automata())
